@@ -1,0 +1,33 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=cor
+pkgver=0.1.20
+pkgrel=0
+pkgdesc="Just another C++/C library, contains everything generic/useful can be shared between different apps/libraries"
+url="https://git.sailfishos.org/mer-core/cor"
+arch="all"
+license="LGPL-2.1-or-later"
+depends_dev="eudev-dev libexecinfo-dev"
+makedepends="$depends_dev cmake tut linux-headers"
+subpackages="$pkgname-dev"
+source="https://git.sailfishos.org/mer-core/cor/-/archive/$pkgver/cor-$pkgver.tar.gz
+	remove-backtrace.patch
+	"
+options="!check" # No tests
+
+build() {
+	cmake -B build \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DVERSION=$pkgver
+	make -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" make -C build install
+
+	rm -r "$pkgdir/opt"
+}
+
+sha512sums="650f6cbb506ab4cb19d066324b3db8887fae2364de137a6b01e388b9c5ca9381dc40c37e0ac81c212c95e5bd350bac1d5fb6e63dacf7595dde9c49dc62d2c4d6  cor-0.1.20.tar.gz
+6613241f77eea09f031ccca27d52b441f0194e30d4e1eda73960563a2dbc404e3728e4b402a2dbc666a117f72737ae57d0e395d001ae0a5a6303c7f0a20c9a59  remove-backtrace.patch"
