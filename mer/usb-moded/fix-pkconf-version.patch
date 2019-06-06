@@ -1,0 +1,10 @@
+diff --git a/configure.ac b/configure.ac
+index 4f35139..864429e 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1,4 +1,4 @@
+-AC_INIT([usb_moded], [0.86.0+mer40])
++AC_INIT([usb_moded], [0.86.0])
+ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+ 
+ AM_CONFIG_HEADER([config.h])
