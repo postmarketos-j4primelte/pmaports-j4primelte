@@ -9,7 +9,7 @@ _kernver=${pkgver%_rc*}
 _mainver=${_kernver%.*}
 _patchlevel=${_kernver/$_mainver./}
 _basever=${_mainver}.$((_patchlevel-1))
-pkgrel=0
+pkgrel=1
 
 arch="x86_64 armhf armv7 aarch64"
 pkgdesc="Linux for pmOS supported chipsets (mainline, more bleeding-edge than stable)"
@@ -165,5 +165,5 @@ sha512sums="6b5edef47c319a3fa7f6c20a3e0903a5acd89ec75e32dc5f99adcb60c9fe118ea312
 f9771a13b3179033cd015bfa243ce13acce6d62ace8cc3184182d72933afe6c2928c85cba325b75040e03948b8bdde494ca5bb2b54edc0bc08345ef3470b3d3f  linux-v5.3-v5.4-rc1.patch
 148e0d9d72cea10765b79d32a6cfe0cd25bfa76825ea36b50adbbea001ae0c2ee2b4b9e1d621c8aff505cac2750df6eac0e0a927c94fa7efb46010b8a198fe85  config-postmarketos-mainline.armhf
 5e622cdf8e931bde115026e1b1ff09639268100642a48dedaa345836c032a00e144cb78a114bf4d4e3f9523bd137a6a3b2b2375defd0e7cbd00731c16e54ab54  config-postmarketos-mainline.armv7
-5cb59d838e3cc40e3ba76cb86b9af7b6167e5d5e7bf76fc579674a40eba7d877ca707bfc4f4260972fbdc2b9c94c87c17f85a817ba69c735aa4184bca4d41673  config-postmarketos-mainline.aarch64
+93de1b616759fd2cd48264bc6f6c29e733392a73897323381888eefa02c1938b0f623edf4c16e5dc396a6d9a4483210d5d9836d71d2fa793da55542fcdb123e5  config-postmarketos-mainline.aarch64
 1546592d9b788cf977404fefcb9f85c5f37baf91013429f40082274f1b98224af4dc196b63445ce59c9f9ac5dd1159aa92a551a7c95dc9e931caa4f70036fccf  config-postmarketos-mainline.x86_64"
