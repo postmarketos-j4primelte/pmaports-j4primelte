@@ -1,0 +1,25 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=ssu-sysinfo
+pkgver=1.2.1
+pkgrel=0
+pkgdesc="Mer's ssu-sysinfo"
+url="https://git.sailfishos.org/mer-core/ssu-sysinfo"
+arch="all"
+license="LGPL-2.1-or-later AND BSD-3-Clause"
+subpackages="$pkgname-dev"
+source="https://git.sailfishos.org/mer-core/ssu-sysinfo/-/archive/$pkgver/ssu-sysinfo-$pkgver.tar.gz
+	fix-library-linking.patch
+	"
+options="!check" # No test suite available
+
+build() {
+	make
+}
+
+package() {
+	DESTDIR="$pkgdir" make install
+}
+
+sha512sums="74f3483212f886bfe2464506b6dec9922b80c100a4197400431b24237b699fcde4ae7ca6bd09e47bd0147afa5988ecb866a03c800d160ea258953a53b970b66c  ssu-sysinfo-1.2.1.tar.gz
+387d31f3743b601ab351a4af53f6d0d142d115330ff6e201995367ec575e284785943b588f707c7cd69eb65bfbe8e20b81c7d398bdc5391299762ef6fa14601b  fix-library-linking.patch"
