@@ -1,0 +1,24 @@
+# Contributor:
+# Maintainer:
+pkgname=pxa-mkbootimg
+pkgver=2019.07.10
+pkgrel=0
+pkgdesc="Android bootimg tool variants for the Marvell PXA1088 and PXA1908 boards"
+url="https://github.com/osm0sis/pxa-mkbootimg"
+arch="all"
+license="Apache-2.0"
+source="pxa-mkbootimg-$pkgver.tar.gz::https://github.com/osm0sis/pxa-mkbootimg/archive/$pkgver.tar.gz"
+options="!check"
+
+build() {
+	make -j1
+}
+
+package() {
+	install -Dm755 "$builddir"/pxa-mkbootimg "$pkgdir"/usr/bin/pxa-mkbootimg
+	install -Dm755 "$builddir"/pxa-unpackbootimg "$pkgdir"/usr/bin/pxa-unpackbootimg
+	install -Dm755 "$builddir"/pxa1088-dtbTool "$pkgdir"/usr/bin/pxa1088-dtbTool
+	install -Dm755 "$builddir"/pxa1908-dtbTool "$pkgdir"/usr/bin/pxa1908-dtbTool
+}
+
+sha512sums="1043b4e6f08a05aca2073cb61f649767c8cd67092bd2bbd540e7054ddbbfe98f397d59129bcac4f657df3409cbd8a20a626143ee20c5430e0867e8f8a0a493c0  pxa-mkbootimg-2019.07.10.tar.gz"
