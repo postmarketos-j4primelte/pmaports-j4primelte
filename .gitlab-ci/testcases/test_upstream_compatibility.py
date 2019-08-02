@@ -100,10 +100,16 @@ def test_aportgen_versions(args):
                 if generated not in handle.read():
                     continue
 
+            # Parse pkgver, pkgrel (supports pkgrel offset with _pkgrel)
+            apkbuild = pmb.parse.apkbuild(args, path)
+            pkgver = apkbuild["pkgver"]
+            pkgrel = apkbuild["pkgrel"]
+            if apkbuild["_pkgrel"]:
+                pkgrel = apkbuild["_pkgrel"]
+
             # Compare the version
             print("Checking " + path)
-            apkbuild = pmb.parse.apkbuild(args, path)
-            version = apkbuild["pkgver"] + "-r" + apkbuild["pkgrel"]
+            version = pkgver + "-r" + pkgrel
             if version != version_upstream:
                 failed.append(apkbuild["pkgname"] + ": " + version +
                               " != " + version_upstream +
