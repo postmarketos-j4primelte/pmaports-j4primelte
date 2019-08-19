@@ -10,34 +10,32 @@ url="http://www.denx.de/wiki/U-Boot/"
 arch="armhf armv7 aarch64"
 license="GPL-2.0-or-later OFL-1.1 BSD-2-Clause BSD-3-Clause eCos-2.0 IBM-pibs
 	ISC LGPL-2.0-only LGPL-2.1-only X11"
-makedepends="$depends_dev bc dtc python2-dev swig bison flex openssl-dev"
-if [ "$CARCH" = "aarch64" ]; then
-	makedepends="$makedepends arm-trusted-firmware-sun50i"
-fi
+makedepends="$depends_dev bc dtc python2-dev swig bison flex openssl-dev arm-trusted-firmware-sun50i"
+#if [ "$CARCH" = "aarch64" ]; then
+#	makedepends="$makedepends arm-trusted-firmware-sun50i"
+#fi
 source="ftp://ftp.denx.de/pub/u-boot/u-boot-${pkgver//_/-}.tar.bz2
 	README.txt
 	update-u-boot
 	0001-sun50i-a64-sync-with-pine64-kernel-branch.patch
+	0002-Sync-sun50i-a64.dtsi-dt-binding-includes-with-pine64.patch
+	0003-Remove-unsupported-omit-if-no-ref-attribute.patch
+	0004-Remove-obsolete-u-boot.dtsi-files.patch
 	"
 builddir="$srcdir"/u-boot-${pkgver//_/-}
 
 case "$CARCH" in
 arm*) board_configs="
-#	beagleboard:am335x_boneblack_vboot
-#	cubieboard:Cubieboard,Cubieboard2
-#	leemaker:Bananapi,Lamobo_R1
-#	linksprite:Linksprite_pcDuino3_Nano
-#	cuboxi:mx6cuboxi
-#	raspberrypi:rpi_0_w,rpi,rpi_2,rpi_3_32b
-#	wandboard:wandboard
+	beagleboard:am335x_boneblack_vboot
+	cubieboard:Cubieboard,Cubieboard2
+	leemaker:Bananapi,Lamobo_R1
+	linksprite:Linksprite_pcDuino3_Nano
+	cuboxi:mx6cuboxi
+	raspberrypi:rpi_0_w,rpi,rpi_2,rpi_3_32b
+	wandboard:wandboard
 	qemu:qemu_arm
 	";;
 aarch64) board_configs="
-#	thunderx:thunderx_88xx
-#	raspberrypi:rpi_3
-#	odroid:odroid-c2
-#	libretech:libretech-cc
-#	qemu:qemu_arm64
 	pine64:pine64-lts
 	";;
 esac
@@ -123,4 +121,7 @@ done
 sha512sums="879abf0c8773bfcdcbe7f28fc68e2b4369bcb74e276d95d510a9b2d1707e63eb01d82e304ba5a6a570552bc18bc593f27ba9b518bafa1d8f8e5bc83cf107c023  u-boot-2019.07.tar.bz2
 f8c9bb6e84d6f0620c976ac7ad5dd7ec7ff9dfdd4b1d03d2bf6653e7beccf80bdf2debfc92fb1f696dba92fb40287d3c45897e0078951451d0835cb61a5f16d1  README.txt
 b3b4fb70c4eea2034bae45c513bca7b738be7507b46d3f2d62b31c794cd238d492acf960c95078cb1c945520debd5d2762103df7cef0fc36acfe9ff9a94549fc  update-u-boot
-3a32ec6b9b947757163c48423e713625c04b3334e41736651f1f4153d930c151c10cc745ec7eb3ece5f0c318c572c39d497846d5a152f8b105ffb2f9967cc38b  0001-sun50i-a64-sync-with-pine64-kernel-branch.patch"
+b2fd7a3afb8114dd2a66038c71ef5bfbc82a54cb0dc24b1c7148f2a6156750b257877f4f7b17010f65424147ecf0da89e34c81f8ed809db91d3de951d6b081ef  0001-sun50i-a64-sync-with-pine64-kernel-branch.patch
+b2e6b00ba7d4fd4c92ce38a5a888e058c276f02ffd2532a71d8118894cca065643c2baf0148b5e1134f931dd6f66f19f95226c36ed5d28de5f6c6508884f59f3  0002-Sync-sun50i-a64.dtsi-dt-binding-includes-with-pine64.patch
+712ee24a755e693a4ef6857c87e3a6337d91df21539d5d7ff8cbb27b2bd3c198258d9de7e23f0f2c7a833b5fe3615f71db7d65577f4f40f47df8d27ed06c1c53  0003-Remove-unsupported-omit-if-no-ref-attribute.patch
+5f81a3dec204b4e35a74f03f171aa6c360d54d08d017ae8abc206da1dd87d5058427f2192bdebcafd88c15de7b641f5f39274547d4db804de4a22acadce721ad  0004-Remove-obsolete-u-boot.dtsi-files.patch"

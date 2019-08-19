@@ -1,0 +1,98 @@
+From 498a60fac10f7680bce1626e065ea80642be2d87 Mon Sep 17 00:00:00 2001
+From: Luca Weiss <luca@z3ntu.xyz>
+Date: Mon, 19 Aug 2019 11:34:55 +0200
+Subject: [PATCH 2/4] Sync sun50i-a64.dtsi dt-binding includes with
+ pine64-kernel branch
+
+---
+ include/dt-bindings/clock/sun50i-a64-ccu.h         | 3 +++
+ include/dt-bindings/clock/sun8i-de2.h              | 3 +++
+ include/dt-bindings/interrupt-controller/arm-gic.h | 5 +++--
+ include/dt-bindings/reset/sun8i-de2.h              | 1 +
+ include/dt-bindings/thermal/thermal.h              | 3 +--
+ 5 files changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/include/dt-bindings/clock/sun50i-a64-ccu.h b/include/dt-bindings/clock/sun50i-a64-ccu.h
+index d66432c6e6..cb10fe2b7f 100644
+--- a/include/dt-bindings/clock/sun50i-a64-ccu.h
++++ b/include/dt-bindings/clock/sun50i-a64-ccu.h
+@@ -43,8 +43,11 @@
+ #ifndef _DT_BINDINGS_CLK_SUN50I_A64_H_
+ #define _DT_BINDINGS_CLK_SUN50I_A64_H_
+ 
++#define CLK_PLL_VIDEO0		7
+ #define CLK_PLL_PERIPH0		11
+ 
++#define CLK_CPUX		21
++
+ #define CLK_BUS_MIPI_DSI	28
+ #define CLK_BUS_CE		29
+ #define CLK_BUS_DMA		30
+diff --git a/include/dt-bindings/clock/sun8i-de2.h b/include/dt-bindings/clock/sun8i-de2.h
+index 3bed63b524..7768f73b05 100644
+--- a/include/dt-bindings/clock/sun8i-de2.h
++++ b/include/dt-bindings/clock/sun8i-de2.h
+@@ -15,4 +15,7 @@
+ #define CLK_MIXER1		7
+ #define CLK_WB			8
+ 
++#define CLK_BUS_ROT		9
++#define CLK_ROT			10
++
+ #endif /* _DT_BINDINGS_CLOCK_SUN8I_DE2_H_ */
+diff --git a/include/dt-bindings/interrupt-controller/arm-gic.h b/include/dt-bindings/interrupt-controller/arm-gic.h
+index 1ea1b702fe..35b6f69b7d 100644
+--- a/include/dt-bindings/interrupt-controller/arm-gic.h
++++ b/include/dt-bindings/interrupt-controller/arm-gic.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 OR MIT */
+ /*
+  * This header provides constants for the ARM GIC.
+  */
+@@ -7,14 +8,14 @@
+ 
+ #include <dt-bindings/interrupt-controller/irq.h>
+ 
+-/* interrupt specific cell 0 */
++/* interrupt specifier cell 0 */
+ 
+ #define GIC_SPI 0
+ #define GIC_PPI 1
+ 
+ /*
+  * Interrupt specifier cell 2.
+- * The flaggs in irq.h are valid, plus those below.
++ * The flags in irq.h are valid, plus those below.
+  */
+ #define GIC_CPU_MASK_RAW(x) ((x) << 8)
+ #define GIC_CPU_MASK_SIMPLE(num) GIC_CPU_MASK_RAW((1 << (num)) - 1)
+diff --git a/include/dt-bindings/reset/sun8i-de2.h b/include/dt-bindings/reset/sun8i-de2.h
+index 9526017432..1c36a6ac86 100644
+--- a/include/dt-bindings/reset/sun8i-de2.h
++++ b/include/dt-bindings/reset/sun8i-de2.h
+@@ -10,5 +10,6 @@
+ #define RST_MIXER0	0
+ #define RST_MIXER1	1
+ #define RST_WB		2
++#define RST_ROT		3
+ 
+ #endif /* _DT_BINDINGS_RESET_SUN8I_DE2_H_ */
+diff --git a/include/dt-bindings/thermal/thermal.h b/include/dt-bindings/thermal/thermal.h
+index b5e6b0069a..bc7babb1a6 100644
+--- a/include/dt-bindings/thermal/thermal.h
++++ b/include/dt-bindings/thermal/thermal.h
+@@ -1,10 +1,9 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
+ /*
+  * This header provides constants for most thermal bindings.
+  *
+  * Copyright (C) 2013 Texas Instruments
+  *	Eduardo Valentin <eduardo.valentin@ti.com>
+- *
+- * GPLv2 only
+  */
+ 
+ #ifndef _DT_BINDINGS_THERMAL_THERMAL_H
+-- 
+2.22.1
+

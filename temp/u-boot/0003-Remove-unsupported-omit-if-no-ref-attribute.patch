@@ -1,0 +1,32 @@
+From 1470d3a150e00424081669db43bc33101f983208 Mon Sep 17 00:00:00 2001
+From: Luca Weiss <luca@z3ntu.xyz>
+Date: Mon, 19 Aug 2019 11:45:24 +0200
+Subject: [PATCH 3/4] Remove unsupported omit-if-no-ref attribute
+
+---
+ arch/arm/dts/sun50i-a64.dtsi | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/arm/dts/sun50i-a64.dtsi b/arch/arm/dts/sun50i-a64.dtsi
+index ec3eaccca9..bc4b1f19d8 100644
+--- a/arch/arm/dts/sun50i-a64.dtsi
++++ b/arch/arm/dts/sun50i-a64.dtsi
+@@ -644,7 +644,6 @@
+ 				function = "csi";
+ 			};
+ 
+-			/omit-if-no-ref/
+ 			csi_mclk_pin: csi-mclk-pin {
+ 				pins = "PE1";
+ 				function = "csi";
+@@ -660,7 +659,6 @@
+ 				function = "i2c1";
+ 			};
+ 
+-			/omit-if-no-ref/
+ 			lcd_rgb666_pins: lcd-rgb666-pins {
+ 				pins = "PD0", "PD1", "PD2", "PD3", "PD4",
+ 				       "PD5", "PD6", "PD7", "PD8", "PD9",
+-- 
+2.22.1
+
