@@ -1,0 +1,62 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=valhalla
+pkgver=3.0.9
+pkgrel=0
+_commit_osm_binary="4e32fa236e919be5bb8dbb323437f026f24e5853"
+_commit_rapidjson="73063f5002612c6bf64fe24f851cd5cc0d83eef9"
+_commit_dirent="287ba928bfe9d20796bf0428d449abc8d6f29d79"
+_commit_date="3e82a52d665cdaaa51027f15906bf503b6896142"
+pkgdesc="Open Source Routing Engine for OpenStreetMap"
+url="https://valhalla.readthedocs.io/"
+arch="all"
+license="MIT"
+depends_dev="zlib-dev curl-dev protobuf-dev boost-dev sqlite-dev lua5.1-dev libspatialite-dev"
+makedepends="$depends_dev cmake"
+checkdepends="bash ncurses"
+subpackages="$pkgname-static $pkgname-dev $pkgname-doc"
+source="https://github.com/valhalla/valhalla/archive/$pkgver/valhalla-$pkgver.tar.gz
+	osm-binary-$_commit_osm_binary.tar.gz::https://github.com/scrosby/osm-binary/archive/$_commit_osm_binary.tar.gz
+	rapidjson-$_commit_rapidjson.tar.gz::https://github.com/miloyip/rapidjson/archive/$_commit_rapidjson.tar.gz
+	dirent-$_commit_dirent.tar.gz::https://github.com/tronkko/dirent/archive/$_commit_dirent.tar.gz
+	date-$_commit_date.tar.gz::https://github.com/HowardHinnant/date/archive/$_commit_date.tar.gz
+	"
+options="!check" # Broken
+
+prepare() {
+	default_prepare
+
+	rmdir \
+		"$builddir"/third_party/OSM-binary \
+		"$builddir"/third_party/rapidjson \
+		"$builddir"/third_party/dirent \
+		"$builddir"/third_party/date
+	mv "$srcdir"/OSM-binary-$_commit_osm_binary "$builddir"/third_party/OSM-binary
+	mv "$srcdir"/rapidjson-$_commit_rapidjson "$builddir"/third_party/rapidjson
+	mv "$srcdir"/dirent-$_commit_dirent "$builddir"/third_party/dirent
+	mv "$srcdir"/date-$_commit_date "$builddir"/third_party/date
+
+}
+
+build() {
+	cmake -B build \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DENABLE_PYTHON_BINDINGS=OFF \
+		-DENABLE_NODE_BINDINGS=OFF \
+		-DENABLE_DATA_TOOLS=OFF \
+		-DENABLE_SERVICES=OFF \
+		-DENABLE_TESTS=OFF
+	make -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" make -C build install
+}
+
+sha512sums="b7639ef3045342f6196a651e44d4aa98095f712230f44439466b3a0635da04adcd634396e281a2b81611c559ed6acf2dc497302425348f3fa32f760d9602ab56  valhalla-3.0.9.tar.gz
+7f99f20da420c1e05eb9346a0d83b259665b7a4cb0d7d2199a9d9c0d0738da8d18d7d194828ab75dca122b90e91c2e05fba17bd0f0a1c6fa062185e2df96de94  osm-binary-4e32fa236e919be5bb8dbb323437f026f24e5853.tar.gz
+3472e129e710bf5343b8b27a61581a1480c8096493e466440b62702d8b5353745d561931f72b5405a736ad92525be3843ea1cf4b5ea5839721cc6d6b358f19bc  rapidjson-73063f5002612c6bf64fe24f851cd5cc0d83eef9.tar.gz
+fa3ca7bef1538c540976b5e696326585226fd6d48cc770f6882ac6680447b32c2afdf48e72f186ba9c77bc5001b1c5cc8a66dde93fa832d81b4ad45b5f5f09cf  dirent-287ba928bfe9d20796bf0428d449abc8d6f29d79.tar.gz
+8e6b506c5ae9e9c86b0c9f7a444cbd7f747a8e28c15194bb528bcf6c147f99314cccfc879547349a6af457f0bbd304dca39415d1a7eeeea25297217e204dd6bb  date-3e82a52d665cdaaa51027f15906bf503b6896142.tar.gz"
