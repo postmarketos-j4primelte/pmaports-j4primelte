@@ -1,13 +1,13 @@
 # Contributor: Bart Ribbers <bribbers@disroot.org>
 # Maintainer: Bart Ribbers <bribbers@disroot.org>
 pkgname=pure-maps
-pkgver=1.24.0
+pkgver=1.26.1
 pkgrel=0
 pkgdesc="Maps and navigation"
 url="https://github.com/rinigus/pure-maps"
 arch="noarch"
 license="GPL-3.0-or-later"
-depends="qmlrunner kirigami2 py3-gpxpy qt5-qtlocation mapbox-gl-qml nemo-qml-plugin-dbus py3-otherside"
+depends="qmlrunner kirigami2 py3-gpxpy qt5-qtlocation mapbox-gl-qml nemo-qml-plugin-dbus py3-pyotherside"
 makedepends="py3-pyflakes python3 gettext qt5-qttools-dev"
 subpackages="$pkgname-lang"
 source="$pkgname-$pkgver.tar.gz::https://github.com/rinigus/pure-maps/archive/$pkgver.tar.gz"
@@ -28,4 +28,4 @@ package() {
 	mv "$pkgdir"/usr/share/pure-maps/locale "$pkgdir"/usr/share/
 }
 
-sha512sums="dbea5184c3a91bc9bced78ff3fe53b4ec4629630b384adcda5cedb12b887e18be0c2945269d48e6cd81030407e62c334fb581791e627757bcdfdb9c95012e274  pure-maps-1.24.0.tar.gz"
+sha512sums="0a9dee6467737f2e6ff74bd05b418b8e7df558cfbc77f8e1fee9dde1565de7b3da9ea472435420d027501b70c303212e3e5a7ec044537820cf95ce09fc4b0b8f  pure-maps-1.26.1.tar.gz"

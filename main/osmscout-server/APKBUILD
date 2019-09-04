@@ -1,0 +1,46 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=osmscout-server
+pkgver=1.15.6
+pkgrel=0
+_commit_geocoder_nlp="85b844682462d85578200346aa39d4ae641a0e57"
+_commit_sqlite3pp="9b8543f8cf39a2b8c7c36f1f4840d9c3d58d487f"
+pkgdesc="Maps server providing tiles, geocoder, and router"
+url="https://rinigus.github.io/osmscout-server"
+arch="all !armhf !armv7" # Limited by kyotocabinet
+license="GPL-3.0-or-later"
+makedepends="qt5-qtbase-dev qt5-qtlocation-dev valhalla-dev libmicrohttpd-dev marisa-trie-dev kyotocabinet-dev libpostal-dev"
+source="$pkgname-$pkgver.tar.gz::https://github.com/rinigus/osmscout-server/archive/$pkgver.tar.gz
+	geocoder-nlp-$_commit_geocoder_nlp.tar.gz::https://github.com/rinigus/geocoder-nlp/archive/$_commit_geocoder_nlp.tar.gz
+	sqlite3pp-$_commit_sqlite3pp.tar.gz::https://github.com/iwongu/sqlite3pp/archive/$_commit_sqlite3pp.tar.gz"
+options="!check"
+
+prepare() {
+	default_prepare
+
+	rmdir "$builddir"/src/geocoder-nlp
+	mv "$srcdir"/geocoder-nlp-$_commit_geocoder_nlp "$builddir"/src/geocoder-nlp
+
+	rmdir "$builddir"/src/geocoder-nlp/thirdparty/sqlite3pp
+	mv "$srcdir"/sqlite3pp-$_commit_sqlite3pp "$builddir"/src/geocoder-nlp/thirdparty/sqlite3pp
+}
+
+build() {
+	qmake-qt5 \
+		PREFIX=/usr \
+		CONFIG+="disable_systemd disable_mapnik disable_osmscout" \
+		SCOUT_FLAVOR=kirigami
+	make
+}
+
+check() {
+	make test
+}
+
+package() {
+	INSTALL_ROOT="$pkgdir" make install
+}
+
+sha512sums="0969b7f432d4c4d393b608787e256fdd6578550a58c665bcec5b9f1874204257c475db3e7505f347638b5e2c3c1727d44bea23a329adee08cdea90d3e1616ec0  osmscout-server-1.15.6.tar.gz
+913db293d5a786296226b47ef20baa0d581725d9dd8164bd817bf5bb3dcf0cbff6bff7dc7b674d964513d4e9fe232775f1a1fb660c7070035018de420306eaea  geocoder-nlp-85b844682462d85578200346aa39d4ae641a0e57.tar.gz
+5d2361e19419e36df03394f08c5be319f1f859dff333a6a2ea3822703233a149eb1eb5b11e03ac10a2f02278bbb09b3c25c932935d2ac17572c82964e6b13b25  sqlite3pp-9b8543f8cf39a2b8c7c36f1f4840d9c3d58d487f.tar.gz"
