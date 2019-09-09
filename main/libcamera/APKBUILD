@@ -1,0 +1,35 @@
+# Contributor:
+# Maintainer:
+pkgname="libcamera"
+pkgver=0_git20190909
+_commit="5d05418d9b53e1838692f687a6dc373dad45355c"
+pkgrel=0
+pkgdesc="Linux camera framework"
+url="https://libcamera.org/"
+arch="all"
+license="LGPL-2.1-or-later AND GPL-2.0-or-later"
+depends=""
+depends_dev=""
+makedepends="$depends_dev meson linux-headers"
+subpackages="$pkgname-dev"
+# FIXME
+source="https://example.org/libcamera-$_commit.tar.xz"
+builddir="$srcdir/libcamera-$_commit"
+options="!check" # Most tests don't run in the chroot
+
+build() {
+	meson \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/var \
+		--buildtype=release \
+		. output
+	ninja -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C output install
+}
+
+sha512sums="01d601aa7a79c5d71ad8b6aaa768ed038a1237ca0a5e21651f4f3da79f7528940f4648b08e249a41f331743ffb5f0e637154451b30b6da536c6f25336954398b  libcamera-5d05418d9b53e1838692f687a6dc373dad45355c.tar.xz"
