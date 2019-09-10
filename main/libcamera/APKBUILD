@@ -10,8 +10,8 @@ arch="all"
 license="LGPL-2.1-or-later AND GPL-2.0-or-later"
 depends=""
 depends_dev=""
-makedepends="$depends_dev meson linux-headers"
-subpackages="$pkgname-dev"
+makedepends="$depends_dev meson linux-headers qt5-qtbase-dev"
+subpackages="$pkgname-dev qcam"
 # FIXME
 source="https://example.org/libcamera-$_commit.tar.xz"
 builddir="$srcdir/libcamera-$_commit"
@@ -26,6 +26,11 @@ build() {
 		--buildtype=release \
 		. output
 	ninja -C output
+}
+
+qcam() {
+	mkdir -p "$subpkgdir"/usr/bin/
+	mv "$pkgdir"/usr/bin/qcam "$subpkgdir"/usr/bin/qcam
 }
 
 package() {
