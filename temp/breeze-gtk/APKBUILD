@@ -1,0 +1,28 @@
+# Forked from Alpine to build Plasma 5.17 pre-release
+pkgname=breeze-gtk
+pkgver=5.16.90
+pkgrel=0
+pkgdesc="A GTK Theme Built to Match KDE's Breeze"
+arch="all"
+url="https://www.kde.org/workspaces/plasmadesktop/"
+license="LGPL-2.1-only"
+depends="gtk-engines"
+makedepends="extra-cmake-modules sassc breeze-dev breeze py3-cairo"
+source="https://download.kde.org/unstable/plasma/$pkgver/$pkgname-$pkgver.tar.xz"
+
+build() {
+	cmake \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	make
+}
+
+check() {
+	CTEST_OUTPUT_ON_FAILURE=TRUE ctest
+}
+
+package() {
+	DESTDIR="$pkgdir" make install
+}
+sha512sums="81ee980f519783b5918b505e000d8cf795049d9b6debe464a9b0736bf1b8aa0b41a375322d0409ce06d9a2114e000912e446d617b110211a5ffba1d63aedfa92  breeze-gtk-5.16.90.tar.xz"
