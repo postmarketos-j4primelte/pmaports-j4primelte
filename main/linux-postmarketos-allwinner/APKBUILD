@@ -4,7 +4,7 @@ _config="config-${_flavor}.${CARCH}"
 pkgname=linux-${_flavor}
 
 pkgver=5.3.0_git20190828
-pkgrel=1
+pkgrel=2
 
 arch="aarch64"
 pkgdesc="Kernel fork with PinePhone Don't be evil patches"
@@ -19,6 +19,7 @@ source="
 	config-${_flavor}.aarch64
 	touch-dts.patch
 	rtl8723cs.patch
+	lima_gem_wait.patch
 "
 
 subpackages="$pkgname-dev"
@@ -102,4 +103,5 @@ sha512sums="568c221d96475727d7b8a7ceb7b1f4d737cb251ef2d6ee23639071d62a4e33c85582
 e4e585ce787301eeee07ff8e45a97343456808a47ed237053f0c83a49b4958a75514def4c5263f4507a282ea90bd2bb3f8f468839f7e5fd05ae947a796c8c6b9  rtl8723cs-1c9c0cb9d335626a66d8063399c6e16751ecc1a8.tar.gz
 42642cec92fb890ba681c709455df0af3c2fd07e4717bf0c97405b2302dce920227b4c9e9d6bbd2c2595af7764f906a5e3ebc74a46ebaa11ec62dacd1110ce1a  config-postmarketos-allwinner.aarch64
 9b13ddbb393ec5a52addbbfd20dfc9e6af60957c0726c6a2d67dc5693cf991192a7aa3ed49efb25a4101dbb8dd6cdc91c71a0c73e87bf3a9ee4eb76f82ec256e  touch-dts.patch
-bf06f931fb543f4bf2f0567902c3021de237fc9684f92af2ed3e956f869d907c9cff1cf3e11a72eb97bda47c8f8b28aff226634f641bdffa04b08d434f419faa  rtl8723cs.patch"
+bf06f931fb543f4bf2f0567902c3021de237fc9684f92af2ed3e956f869d907c9cff1cf3e11a72eb97bda47c8f8b28aff226634f641bdffa04b08d434f419faa  rtl8723cs.patch
+2a6219a393136cb0cc9eb6370b8467a06150cca3466e7cd82de465ccfab8085631478acdc83dfae8bc431923f7ec0de5d63598ee4f080f6dab0bff5911da8e8a  lima_gem_wait.patch"
