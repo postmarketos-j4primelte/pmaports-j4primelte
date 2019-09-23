@@ -8,9 +8,9 @@
 # of this aport, so mesa-git including _all_ of the subpackages, to not cause
 # conflicts
 pkgname=mesa-git
-pkgver=0_git20190917
+pkgver=0_git20190920
 pkgrel=0
-_commit="631255387f0469910db99eccbfbaa63345425739"
+_commit="193ea5f00147503dd370534d43c841d9307b6534"
 pkgdesc="(Git) Mesa DRI OpenGL library"
 url="https://www.mesa3d.org"
 arch="armhf armv7 aarch64"
@@ -64,7 +64,7 @@ makedepends="
 	zlib-dev
 	"
 source="
-	$pkgname-$_commit.tar.gz::https://gitlab.freedesktop.org/mesa/mesa/-/archive/$_commit.tar.gz
+	$pkgname-$_commit.tar.gz::https://gitlab.freedesktop.org/rellla/mesa/-/archive/$_commit.tar.gz
 	adjust-cache-deflate-buffer.patch
 	musl-fix-includes.patch
 	add-use-elf-tls.patch
@@ -344,7 +344,7 @@ _vulkan() {
 		_mv_vulkan intel ;;
 	esac
 }
-sha512sums="1aaf6ed470c579303631635e6c5dfb16a8d746c67709987a2772bd23559adf12bc0da39abc620fa3d4229fa76fcbdc3b61a84cf0c6098db85a24f4724295c8c7  mesa-git-631255387f0469910db99eccbfbaa63345425739.tar.gz
+sha512sums="cd98ff3db451cf472e66f2a1fb6d3b10c2f6192ab4096ab4d8d3619a0354158664bfde48949bf774d62d42fa01a364c356d76ff7a8d341b7d25ed3ae9aecb004  mesa-git-193ea5f00147503dd370534d43c841d9307b6534.tar.gz
 cdf22d2da3328e116c379264886bd01fd3ad5cc45fe03dc6fd97bdc4794502598ee195c0b9d975fa264d6ac31c6fa108c0535c91800ecf4fcabfd308e53074cc  adjust-cache-deflate-buffer.patch
 cf849044d6cc7d2af4ff015208fb09d70bf9660538699797da21bda2ecb7c1892d312af83d05116afd826708d9caafb1d05a13f09139c558aea6fee931e3eee7  musl-fix-includes.patch
 6974e344b9a613077cb322b734ff4e2780e78f1a2af60657686b3b3341ad526273f58b22624ba6c575988474dbc0978e7ebe4a9d1547483305f8fc251d24d86e  add-use-elf-tls.patch"
