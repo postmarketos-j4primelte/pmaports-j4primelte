@@ -2,12 +2,12 @@
 pkgname="device-pine64-pinetab"
 pkgdesc="PINE64 PineTab"
 pkgver=0.1
-pkgrel=6
+pkgrel=7
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
 options="!check !archcheck"
-depends="postmarketos-base linux-postmarketos-allwinner u-boot-pine64 uboot-tools mesa-git mesa-git-glapi mesa-git-gl mesa-git-egl mesa-git-dri-lima mesa-git-dri-kmsro mesa-git-gbm mesa-git-gles"
+depends="postmarketos-base linux-postmarketos-allwinner u-boot-pine64 uboot-tools mesa-git mesa-git-glapi mesa-git-gl mesa-git-egl mesa-git-dri-lima mesa-git-dri-kmsro mesa-git-gbm mesa-git-gles iio-sensor-proxy"
 makedepends="devicepkg-dev"
 subpackages="$pkgname-sway
              $pkgname-weston
