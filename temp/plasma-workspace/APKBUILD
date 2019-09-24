@@ -12,6 +12,7 @@ makedepends="$depends_dev extra-cmake-modules kdoctools-dev libxtst-dev"
 checkdepends="xvfb-run"
 source="https://download.kde.org/unstable/plasma/${pkgver%.1}/$pkgname-$pkgver.tar.xz"
 subpackages="$pkgname-dev $pkgname-libs $pkgname-doc $pkgname-lang"
+options="!nocheck"
 
 prepare() {
 	default_prepare
