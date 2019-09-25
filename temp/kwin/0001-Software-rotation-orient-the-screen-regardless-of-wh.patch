@@ -1,0 +1,944 @@
+From b3324811e11095c9ad7b8e99ad23b5b3038a3e4a Mon Sep 17 00:00:00 2001
+From: Aleix Pol <aleixpol@kde.org>
+Date: Wed, 25 Sep 2019 09:30:10 +0530
+Subject: [PATCH] Software rotation: orient the screen regardless of whether
+ drm accepted it
+
+Summary: In case it fails, tell the OpenGL scene how to rotate the scene.
+
+Test Plan: Rotated my system and the system rotated with me.
+
+Reviewers: #kwin, romangg
+
+Subscribers: romangg, Dr.X, univerz, davidedmundson, zzag
+
+Tags: #kwin
+
+Differential Revision: https://phabricator.kde.org/D19860
+---
+ abstract_output.h                             |  9 +++++
+ abstract_wayland_output.h                     |  4 +--
+ autotests/mock_screens.h                      |  1 +
+ autotests/test_screen_paint_data.cpp          |  4 +--
+ effects/backgroundcontrast/contrast.cpp       | 34 +++++++++++++++++--
+ effects/backgroundcontrast/contrast.h         |  2 ++
+ effects/blur/blur.cpp                         |  9 +++++
+ effects/blur/blur.h                           |  2 ++
+ effects/screenshot/screenshot.cpp             | 13 +++++--
+ effects/screenshot/screenshot.h               |  1 +
+ libkwineffects/kwineffects.cpp                |  9 ++++-
+ libkwineffects/kwineffects.h                  |  4 ++-
+ libkwineffects/kwinglutils.cpp                | 15 ++++----
+ libkwineffects/kwinglutils.h                  |  2 +-
+ outputscreens.cpp                             |  8 +++++
+ outputscreens.h                               |  1 +
+ platform.cpp                                  |  5 +++
+ platform.h                                    |  2 ++
+ .../scenes/opengl/abstract_egl_backend.cpp    | 12 +++++++
+ .../scenes/opengl/abstract_egl_backend.h      |  3 ++
+ plugins/platforms/drm/drm_output.cpp          | 30 +++++++++++++++-
+ plugins/platforms/drm/drm_output.h            |  8 +++++
+ plugins/platforms/drm/egl_gbm_backend.cpp     | 18 +++++-----
+ plugins/platforms/virtual/screens_virtual.h   |  3 ++
+ plugins/platforms/virtual/virtual_output.h    |  4 +++
+ .../platforms/wayland/egl_wayland_backend.cpp | 10 +++---
+ .../platforms/x11/standalone/screens_xrandr.h |  3 ++
+ plugins/scenes/opengl/scene_opengl.cpp        | 19 +++++++----
+ plugins/scenes/opengl/scene_opengl.h          |  6 ++--
+ plugins/scenes/qpainter/scene_qpainter.cpp    |  4 +--
+ plugins/scenes/xrender/scene_xrender.cpp      |  2 +-
+ scene.cpp                                     |  4 +--
+ scene.h                                       |  2 +-
+ screens.h                                     |  2 ++
+ 34 files changed, 205 insertions(+), 50 deletions(-)
+
+diff --git a/abstract_output.h b/abstract_output.h
+index d96c288e5..1070d261b 100644
+--- a/abstract_output.h
++++ b/abstract_output.h
+@@ -182,6 +182,15 @@ public:
+      */
+     virtual bool setGammaRamp(const GammaRamp &gamma);
+ 
++    /**
++     * @returns the angle to rotate the display to fit the output
++     **/
++    virtual int softwareRotationAngle() const {
++        return 0;
++    }
++
++    QSize orientateSize(const QSize &size) const;
++
+ private:
+     Q_DISABLE_COPY(AbstractOutput)
+ };
+diff --git a/abstract_wayland_output.h b/abstract_wayland_output.h
+index 88ae3bb3f..e30ed7296 100644
+--- a/abstract_wayland_output.h
++++ b/abstract_wayland_output.h
+@@ -101,6 +101,8 @@ public:
+      */
+     void setEnabled(bool enable) override;
+ 
++    QSize orientateSize(const QSize &size) const;
++
+ Q_SIGNALS:
+     void modeChanged();
+ 
+@@ -147,8 +149,6 @@ protected:
+ 
+     void setWaylandMode(const QSize &size, int refreshRate);
+ 
+-    QSize orientateSize(const QSize &size) const;
+-
+ private:
+     void createWaylandOutput();
+     void createXdgOutput();
+diff --git a/autotests/mock_screens.h b/autotests/mock_screens.h
+index 1150e034f..1a17edf1c 100644
+--- a/autotests/mock_screens.h
++++ b/autotests/mock_screens.h
+@@ -37,6 +37,7 @@ public:
+     float refreshRate(int screen) const override;
+     QSize size(int screen) const override;
+     void init() override;
++    int rotation(int /*screen*/) const override { return 0; }
+ 
+     void setGeometries(const QList<QRect> &geometries);
+ 
+diff --git a/autotests/test_screen_paint_data.cpp b/autotests/test_screen_paint_data.cpp
+index 952a22950..b47d752fe 100644
+--- a/autotests/test_screen_paint_data.cpp
++++ b/autotests/test_screen_paint_data.cpp
+@@ -63,7 +63,7 @@ void TestScreenPaintData::testCtor()
+ 
+ void TestScreenPaintData::testCopyCtor()
+ {
+-    ScreenPaintData data(QMatrix4x4(), QRect(10, 20, 30, 40));
++    ScreenPaintData data(QMatrix4x4(), 0, QRect(10, 20, 30, 40));
+     ScreenPaintData data2(data);
+     // no value had been changed
+     QCOMPARE(data2.xScale(), 1.0);
+@@ -100,7 +100,7 @@ void TestScreenPaintData::testCopyCtor()
+ void TestScreenPaintData::testAssignmentOperator()
+ {
+     ScreenPaintData data;
+-    ScreenPaintData data2(QMatrix4x4(), QRect(10, 20, 30, 40));
++    ScreenPaintData data2(QMatrix4x4(), 0, QRect(10, 20, 30, 40));
+ 
+     data2.setScale(QVector3D(0.5, 2.0, 3.0));
+     data2.translate(0.5, 2.0, 3.0);
+diff --git a/effects/backgroundcontrast/contrast.cpp b/effects/backgroundcontrast/contrast.cpp
+index 961e829e2..5cc5c84b5 100644
+--- a/effects/backgroundcontrast/contrast.cpp
++++ b/effects/backgroundcontrast/contrast.cpp
+@@ -193,6 +193,12 @@ void ContrastEffect::slotWindowAdded(EffectWindow *w)
+     updateContrastRegion(w);
+ }
+ 
++void ContrastEffect::paintScreen(int mask, QRegion region, KWin::ScreenPaintData & data)
++{
++    Effect::paintScreen(mask, region, data);
++    m_screenRotation = data.screenRotation();
++}
++
+ bool ContrastEffect::eventFilter(QObject *watched, QEvent *event)
+ {
+     auto internal = qobject_cast<QWindow*>(watched);
+@@ -473,6 +479,21 @@ void ContrastEffect::paintEffectFrame(EffectFrame *frame, QRegion region, double
+     effects->paintEffectFrame(frame, region, opacity, frameOpacity);
+ }
+ 
++static QMatrix4x4 orientateRect(int rotation, const QRect &screen)
++{
++    QMatrix4x4 m;
++    if (rotation != 0) {
++        m.rotate(-rotation, 0, 0, 1);
++
++        //the coordinates origin changes as we rotate
++        if (rotation == 90)
++            m.translate(-screen.width(), 0);
++        else if (rotation == 270)
++            m.translate(0, -screen.height());
++    }
++    return m;
++}
++
+ void ContrastEffect::doContrast(EffectWindow *w, const QRegion& shape, const QRect& screen, const float opacity, const QMatrix4x4 &screenProjection)
+ {
+     const QRegion actualShape = shape & screen;
+@@ -488,13 +509,15 @@ void ContrastEffect::doContrast(EffectWindow *w, const QRegion& shape, const QRe
+ 
+     // Create a scratch texture and copy the area in the back buffer that we're
+     // going to blur into it
+-    GLTexture scratch(GL_RGBA8, r.width() * scale, r.height() * scale);
++    const auto transform = orientateRect(m_screenRotation, screen);
++    const QRect sg = transform.mapRect(GLRenderTarget::virtualScreenGeometry());
++    const QRect hr = transform.mapRect(r.translated(-sg.topLeft()));
++    GLTexture scratch(GL_RGBA8, hr.width() * scale, hr.height() * scale);
+     scratch.setFilter(GL_LINEAR);
+     scratch.setWrapMode(GL_CLAMP_TO_EDGE);
+     scratch.bind();
+ 
+-    const QRect sg = GLRenderTarget::virtualScreenGeometry();
+-    glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, (r.x() - sg.x()) * scale, (sg.height() - (r.y() - sg.y() + r.height())) * scale,
++    glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, hr.x() * scale, (sg.height() - hr.y() - hr.height()) * scale,
+                         scratch.width(), scratch.height());
+ 
+     // Draw the texture on the offscreen framebuffer object, while blurring it horizontally
+@@ -507,6 +530,11 @@ void ContrastEffect::doContrast(EffectWindow *w, const QRegion& shape, const QRe
+     // Set up the texture matrix to transform from screen coordinates
+     // to texture coordinates.
+     QMatrix4x4 textureMatrix;
++    if (m_screenRotation) {
++        textureMatrix.translate(.5, .5);
++        textureMatrix.rotate(m_screenRotation, 0, 0, 1);
++        textureMatrix.translate(-.5, -.5);
++    }
+     textureMatrix.scale(1.0 / r.width(), -1.0 / r.height(), 1);
+     textureMatrix.translate(-r.x(), -r.height() - r.y(), 0);
+     shader->setTextureMatrix(textureMatrix);
+diff --git a/effects/backgroundcontrast/contrast.h b/effects/backgroundcontrast/contrast.h
+index 3785c81c4..01743f593 100644
+--- a/effects/backgroundcontrast/contrast.h
++++ b/effects/backgroundcontrast/contrast.h
+@@ -65,6 +65,7 @@ public:
+     }
+ 
+     bool eventFilter(QObject *watched, QEvent *event) override;
++    void paintScreen(int mask, QRegion region, KWin::ScreenPaintData & data) override;
+ 
+ public Q_SLOTS:
+     void slotWindowAdded(KWin::EffectWindow *w);
+@@ -88,6 +89,7 @@ private:
+     QHash< const EffectWindow*, QMatrix4x4> m_colorMatrices;
+     QHash< const EffectWindow*, QMetaObject::Connection > m_contrastChangedConnections; // used only in Wayland to keep track of effect changed
+     KWayland::Server::ContrastManagerInterface *m_contrastManager = nullptr;
++    int m_screenRotation = 0;
+ };
+ 
+ inline
+diff --git a/effects/blur/blur.cpp b/effects/blur/blur.cpp
+index 9cbaf082f..6b4aa5bd0 100644
+--- a/effects/blur/blur.cpp
++++ b/effects/blur/blur.cpp
+@@ -493,6 +493,12 @@ void BlurEffect::prePaintScreen(ScreenPrePaintData &data, int time)
+     effects->prePaintScreen(data, time);
+ }
+ 
++void BlurEffect::paintScreen(int mask, QRegion region, KWin::ScreenPaintData & data)
++{
++    Effect::paintScreen(mask, region, data);
++    m_screenRotation = data.screenRotation();
++}
++
+ void BlurEffect::prePaintWindow(EffectWindow* w, WindowPrePaintData& data, int time)
+ {
+     // this effect relies on prePaintWindow being called in the bottom to top order
+@@ -658,6 +664,9 @@ void BlurEffect::generateNoiseTexture()
+ 
+ void BlurEffect::doBlur(const QRegion& shape, const QRect& screen, const float opacity, const QMatrix4x4 &screenProjection, bool isDock, QRect windowRect)
+ {
++    if (m_screenRotation == 90 || m_screenRotation == 270) {
++        return;
++    }
+     // Blur would not render correctly on a secondary monitor because of wrong coordinates
+     // BUG: 393723
+     const int xTranslate = -screen.x();
+diff --git a/effects/blur/blur.h b/effects/blur/blur.h
+index 15c99fd4e..d75f7a3a3 100644
+--- a/effects/blur/blur.h
++++ b/effects/blur/blur.h
+@@ -57,6 +57,7 @@ public:
+ 
+     void reconfigure(ReconfigureFlags flags) override;
+     void prePaintScreen(ScreenPrePaintData &data, int time) override;
++    void paintScreen(int mask, QRegion region, KWin::ScreenPaintData & data) override;
+     void prePaintWindow(EffectWindow* w, WindowPrePaintData& data, int time) override;
+     void drawWindow(EffectWindow *w, int mask, QRegion region, WindowPaintData &data) override;
+     void paintEffectFrame(EffectFrame *frame, QRegion region, double opacity, double frameOpacity) override;
+@@ -114,6 +115,7 @@ private:
+     int m_expandSize;
+     int m_noiseStrength;
+     int m_scalingFactor;
++    int m_screenRotation = 0;
+ 
+     struct OffsetStruct {
+         float minOffset;
+diff --git a/effects/screenshot/screenshot.cpp b/effects/screenshot/screenshot.cpp
+index 35a64cbeb..6cd7847ae 100644
+--- a/effects/screenshot/screenshot.cpp
++++ b/effects/screenshot/screenshot.cpp
+@@ -158,6 +158,7 @@ static xcb_pixmap_t xpixmapFromImage(const QImage &image)
+ 
+ void ScreenShotEffect::paintScreen(int mask, QRegion region, ScreenPaintData &data)
+ {
++    m_rotation = data.screenRotation();
+     m_cachedOutputGeometry = data.outputGeometry();
+     effects->paintScreen(mask, region, data);
+ }
+@@ -287,7 +288,14 @@ void ScreenShotEffect::postPaintScreen()
+                 // doesn't intersect, not going onto this screenshot
+                 return;
+             }
+-            const QImage img = blitScreenshot(intersection);
++
++            auto correctedIntersection = intersection;
++            if (m_rotation != 0 && m_rotation != 180)
++                correctedIntersection = correctedIntersection.transposed();
++            QImage img = blitScreenshot(correctedIntersection);
++            if (m_rotation)
++                img = img.transformed(QTransform().rotate(m_rotation), Qt::SmoothTransformation);
++
+             if (img.size() == m_scheduledGeometry.size()) {
+                 // we are done
+                 sendReplyImage(img);
+@@ -613,7 +621,7 @@ QImage ScreenShotEffect::blitScreenshot(const QRect &geometry)
+         if (GLRenderTarget::blitSupported() && !GLPlatform::instance()->isGLES()) {
+             GLTexture tex(GL_RGBA8, geometry.width(), geometry.height());
+             GLRenderTarget target(tex);
+-            target.blitFromFramebuffer(geometry);
++            target.blitFromFramebuffer(geometry, {}, GL_LINEAR, m_rotation == 90 || m_rotation == 270);
+             // copy content from framebuffer into image
+             tex.bind();
+             glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)img.bits());
+@@ -648,6 +656,7 @@ void ScreenShotEffect::grabPointerImage(QImage& snapshot, int offsetx, int offse
+         return;
+ 
+     QPainter painter(&snapshot);
++    painter.rotate(-m_rotation);
+     painter.drawImage(effects->cursorPos() - cursor.hotSpot() - QPoint(offsetx, offsety), cursor.image());
+ }
+ 
+diff --git a/effects/screenshot/screenshot.h b/effects/screenshot/screenshot.h
+index bbbc789b0..e3438b051 100644
+--- a/effects/screenshot/screenshot.h
++++ b/effects/screenshot/screenshot.h
+@@ -155,6 +155,7 @@ private:
+     ScreenShotType m_type;
+     QRect m_scheduledGeometry;
+     QDBusMessage m_replyMessage;
++    qreal m_rotation = 0;
+     QRect m_cachedOutputGeometry;
+     QImage m_multipleOutputsImage;
+     QRegion m_multipleOutputsRendered;
+diff --git a/libkwineffects/kwineffects.cpp b/libkwineffects/kwineffects.cpp
+index 06a3b735a..ac7388c94 100644
+--- a/libkwineffects/kwineffects.cpp
++++ b/libkwineffects/kwineffects.cpp
+@@ -423,6 +423,7 @@ class ScreenPaintData::Private
+ public:
+     QMatrix4x4 projectionMatrix;
+     QRect outputGeometry;
++    int screenRotation = 0;
+ };
+ 
+ ScreenPaintData::ScreenPaintData()
+@@ -431,12 +432,13 @@ ScreenPaintData::ScreenPaintData()
+ {
+ }
+ 
+-ScreenPaintData::ScreenPaintData(const QMatrix4x4 &projectionMatrix, const QRect &outputGeometry)
++ScreenPaintData::ScreenPaintData(const QMatrix4x4 &projectionMatrix, int rotation, const QRect &outputGeometry)
+     : PaintData()
+     , d(new Private())
+ {
+     d->projectionMatrix = projectionMatrix;
+     d->outputGeometry = outputGeometry;
++    d->screenRotation = rotation;
+ }
+ 
+ ScreenPaintData::~ScreenPaintData() = default;
+@@ -526,6 +528,11 @@ QRect ScreenPaintData::outputGeometry() const
+     return d->outputGeometry;
+ }
+ 
++int ScreenPaintData::screenRotation() const
++{
++    return d->screenRotation;
++}
++
+ //****************************************
+ // Effect
+ //****************************************
+diff --git a/libkwineffects/kwineffects.h b/libkwineffects/kwineffects.h
+index c57c1bddf..fb14741f1 100644
+--- a/libkwineffects/kwineffects.h
++++ b/libkwineffects/kwineffects.h
+@@ -2925,7 +2925,7 @@ class KWINEFFECTS_EXPORT ScreenPaintData : public PaintData
+ {
+ public:
+     ScreenPaintData();
+-    ScreenPaintData(const QMatrix4x4 &projectionMatrix, const QRect &outputGeometry = QRect());
++    ScreenPaintData(const QMatrix4x4 &projectionMatrix, int screenRotation, const QRect &outputGeometry = QRect());
+     ScreenPaintData(const ScreenPaintData &other);
+     ~ScreenPaintData() override;
+     /**
+@@ -2978,6 +2978,8 @@ public:
+      */
+     QMatrix4x4 projectionMatrix() const;
+ 
++    int screenRotation() const;
++
+     /**
+      * The geometry of the currently rendered output.
+      * Only set for per-output rendering (e.g. Wayland).
+diff --git a/libkwineffects/kwinglutils.cpp b/libkwineffects/kwinglutils.cpp
+index be0843348..5f4e48125 100644
+--- a/libkwineffects/kwinglutils.cpp
++++ b/libkwineffects/kwinglutils.cpp
+@@ -1223,7 +1223,7 @@ void GLRenderTarget::initFBO()
+     glGenFramebuffers(1, &mFramebuffer);
+ 
+ #if DEBUG_GLRENDERTARGET
+-    if ((err = glGetError()) != GL_NO_ERROR) {
++    if ((err = glGetError()) != GL_NO_ERROR)  {
+         qCCritical(LIBKWINGLUTILS) << "glGenFramebuffers failed: " << formatGLError(err);
+         return;
+     }
+@@ -1268,7 +1268,7 @@ void GLRenderTarget::initFBO()
+     mValid = true;
+ }
+ 
+-void GLRenderTarget::blitFromFramebuffer(const QRect &source, const QRect &destination, GLenum filter)
++void GLRenderTarget::blitFromFramebuffer(const QRect &source, const QRect &destination, GLenum filter, bool transpose)
+ {
+     if (!GLRenderTarget::blitSupported()) {
+         return;
+@@ -1281,13 +1281,14 @@ void GLRenderTarget::blitFromFramebuffer(const QRect &source, const QRect &desti
+     GLRenderTarget::pushRenderTarget(this);
+     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFramebuffer);
+     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+-    const QRect s = source.isNull() ? s_virtualScreenGeometry : source;
++    const auto vsg = transpose ? s_virtualScreenGeometry.transposed() : s_virtualScreenGeometry;
++    const QRect s = source.isNull() ? vsg : source;
+     const QRect d = destination.isNull() ? QRect(0, 0, mTexture.width(), mTexture.height()) : destination;
+ 
+-    glBlitFramebuffer((s.x() - s_virtualScreenGeometry.x()) * s_virtualScreenScale,
+-                      (s_virtualScreenGeometry.height() - (s.y() - s_virtualScreenGeometry.y() + s.height())) * s_virtualScreenScale,
+-                      (s.x() - s_virtualScreenGeometry.x() + s.width()) * s_virtualScreenScale,
+-                      (s_virtualScreenGeometry.height() - (s.y() - s_virtualScreenGeometry.y())) * s_virtualScreenScale,
++    glBlitFramebuffer((s.x() - vsg.x()) * s_virtualScreenScale,
++                      (vsg.height() - (s.y() - vsg.y() + s.height())) * s_virtualScreenScale,
++                      (s.x() - vsg.x() + s.width()) * s_virtualScreenScale,
++                      (vsg.height() - (s.y() - vsg.y())) * s_virtualScreenScale,
+                       d.x(), mTexture.height() - d.y() - d.height(), d.x() + d.width(), mTexture.height() - d.y(),
+                       GL_COLOR_BUFFER_BIT, filter);
+     GLRenderTarget::popRenderTarget();
+diff --git a/libkwineffects/kwinglutils.h b/libkwineffects/kwinglutils.h
+index a8252ad04..619f5430d 100644
+--- a/libkwineffects/kwinglutils.h
++++ b/libkwineffects/kwinglutils.h
+@@ -498,7 +498,7 @@ public:
+      * @see blitSupported
+      * @since 4.8
+      */
+-    void blitFromFramebuffer(const QRect &source = QRect(), const QRect &destination = QRect(), GLenum filter = GL_LINEAR);
++    void blitFromFramebuffer(const QRect &source = QRect(), const QRect &destination = QRect(), GLenum filter = GL_LINEAR, bool transpose = false);
+ 
+     /**
+      * Sets the virtual screen size to @p s.
+diff --git a/outputscreens.cpp b/outputscreens.cpp
+index 4ac6a31fc..b2e6cbbd1 100644
+--- a/outputscreens.cpp
++++ b/outputscreens.cpp
+@@ -102,6 +102,14 @@ Qt::ScreenOrientation OutputScreens::orientation(int screen) const
+     }
+     return Qt::PrimaryOrientation;
+ }
++int OutputScreens::rotation(int screen) const
++{
++    auto output = m_platform->enabledOutputs().value(screen, nullptr);
++    if (!output) {
++        return 0;
++    }
++    return output->softwareRotationAngle();
++}
+ 
+ void OutputScreens::updateCount()
+ {
+diff --git a/outputscreens.h b/outputscreens.h
+index 3bc8ba26b..374ca1aeb 100644
+--- a/outputscreens.h
++++ b/outputscreens.h
+@@ -45,6 +45,7 @@ public:
+     QSize size(int screen) const override;
+     qreal scale(int screen) const override;
+     float refreshRate(int screen) const override;
++    int rotation(int screen) const override;
+     Qt::ScreenOrientation orientation(int screen) const override;
+     void updateCount() override;
+     int number(const QPoint &pos) const override;
+diff --git a/platform.cpp b/platform.cpp
+index 703d1f30d..169565a6e 100644
+--- a/platform.cpp
++++ b/platform.cpp
+@@ -459,6 +459,11 @@ QVector<qreal> Platform::screenScales() const
+     return QVector<qreal>({1});
+ }
+ 
++QVector<int> Platform::screenRotations() const
++{
++    return {0};
++}
++
+ bool Platform::requiresCompositing() const
+ {
+     return true;
+diff --git a/platform.h b/platform.h
+index 10e9786ce..ccc601c99 100644
+--- a/platform.h
++++ b/platform.h
+@@ -456,6 +456,8 @@ public:
+         m_selectedCompositor = type;
+     }
+ 
++    virtual QVector<int> screenRotations() const;
++
+ public Q_SLOTS:
+     void pointerMotion(const QPointF &position, quint32 time);
+     void pointerButtonPressed(quint32 button, quint32 time);
+diff --git a/platformsupport/scenes/opengl/abstract_egl_backend.cpp b/platformsupport/scenes/opengl/abstract_egl_backend.cpp
+index f8050a17b..8d9ce9ad2 100644
+--- a/platformsupport/scenes/opengl/abstract_egl_backend.cpp
++++ b/platformsupport/scenes/opengl/abstract_egl_backend.cpp
+@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ #include "abstract_egl_backend.h"
+ #include "linux_dmabuf.h"
+ #include "texture.h"
++#include "abstract_output.h"
+ #include "composite.h"
+ #include "egl_context_attribute_builder.h"
+ #include "options.h"
+@@ -596,5 +597,16 @@ bool AbstractEglTexture::updateFromFBO(const QSharedPointer<QOpenGLFramebufferOb
+     return true;
+ }
+ 
++
++QRect AbstractEglBackend::orientateRect(AbstractOutput *output, const QRect &r)
++{
++    if (output->softwareRotationAngle() != 0) {
++        QTransform m;
++        m.rotate(-output->softwareRotationAngle(), Qt::ZAxis);
++        return QRect(m.map(r.topLeft()), r.size());
++    }
++    return r;
++}
++
+ }
+ 
+diff --git a/platformsupport/scenes/opengl/abstract_egl_backend.h b/platformsupport/scenes/opengl/abstract_egl_backend.h
+index 18232fd04..a7c19ac28 100644
+--- a/platformsupport/scenes/opengl/abstract_egl_backend.h
++++ b/platformsupport/scenes/opengl/abstract_egl_backend.h
+@@ -38,6 +38,7 @@ class BufferInterface;
+ 
+ namespace KWin
+ {
++class AbstractOutput;
+ 
+ class KWIN_EXPORT AbstractEglBackend : public QObject, public OpenGLBackend
+ {
+@@ -77,6 +78,8 @@ protected:
+ 
+     bool createContext();
+ 
++    static QRect orientateRect(AbstractOutput *output, const QRect &r);
++
+ private:
+     void unbindWaylandDisplay();
+ 
+diff --git a/plugins/platforms/drm/drm_output.cpp b/plugins/platforms/drm/drm_output.cpp
+index cdb373b7d..31a7bc3bb 100644
+--- a/plugins/platforms/drm/drm_output.cpp
++++ b/plugins/platforms/drm/drm_output.cpp
+@@ -23,6 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ #include "drm_object_crtc.h"
+ #include "drm_object_connector.h"
+ 
++#include <errno.h>
++#include <cmath>
++
+ #include "composite.h"
+ #include "logind.h"
+ #include "logging.h"
+@@ -308,6 +311,7 @@ void DrmOutput::initOutputDevice(drmModeConnector *connector)
+     const QString model = connectorName + QStringLiteral("-") + QString::number(connector->connector_type_id) + QStringLiteral("-") + modelName;
+ 
+     // read in mode information
++    m_preferredOrientation = Qt::LandscapeOrientation;
+     QVector<KWayland::Server::OutputDeviceInterface::Mode> modes;
+     for (int i = 0; i < connector->count_modes; ++i) {
+         // TODO: in AMS here we could read and store for later every mode's blob_id
+@@ -318,6 +322,7 @@ void DrmOutput::initOutputDevice(drmModeConnector *connector)
+             deviceflags |= KWayland::Server::OutputDeviceInterface::ModeFlag::Current;
+         }
+         if (m->type & DRM_MODE_TYPE_PREFERRED) {
++            m_preferredOrientation = m->hdisplay > m->vdisplay ? Qt::LandscapeOrientation : Qt::PortraitOrientation;
+             deviceflags |= KWayland::Server::OutputDeviceInterface::ModeFlag::Preferred;
+         }
+ 
+@@ -639,6 +644,7 @@ void DrmOutput::transform(KWayland::Server::OutputDeviceInterface::Transform tra
+     using KWayland::Server::OutputDeviceInterface;
+     using KWayland::Server::OutputInterface;
+     auto wlOutput = waylandOutput();
++    m_softwareRotationAngle = 0;
+ 
+     switch (transform) {
+     case OutputDeviceInterface::Transform::Normal:
+@@ -825,6 +831,27 @@ bool DrmOutput::dpmsAtomicOff()
+     return true;
+ }
+ 
++///Copied from QPlatformScreen
++int DrmOutput::angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b) const
++{
++    if (a == Qt::PrimaryOrientation) a = m_preferredOrientation;
++    if (b == Qt::PrimaryOrientation) b = m_preferredOrientation;
++
++    if (a == b)
++        return 0;
++
++    int ia = std::log2(uint(a));
++    int ib = std::log2(uint(b));
++
++    int delta = ia - ib;
++
++    if (delta < 0)
++        delta = delta + 4;
++
++    int angles[] = { 0, 90, 180, 270 };
++    return angles[delta];
++}
++
+ bool DrmOutput::presentAtomically(DrmBuffer *buffer)
+ {
+     if (!LogindIntegration::self()->isActiveSession()) {
+@@ -856,7 +883,8 @@ bool DrmOutput::presentAtomically(DrmBuffer *buffer)
+         // go back to previous state
+         if (m_lastWorkingState.valid) {
+             m_mode = m_lastWorkingState.mode;
+-            setOrientation(m_lastWorkingState.orientation);
++            m_softwareRotationAngle = angleBetween(m_lastWorkingState.orientation, orientation());
++            qCDebug(KWIN_DRM) << "software rotation to" << m_softwareRotationAngle;
+             setGlobalPos(m_lastWorkingState.globalPos);
+             if (m_primaryPlane) {
+                 m_primaryPlane->setTransformation(m_lastWorkingState.planeTransformations);
+diff --git a/plugins/platforms/drm/drm_output.h b/plugins/platforms/drm/drm_output.h
+index a8ec22e54..65e477096 100644
+--- a/plugins/platforms/drm/drm_output.h
++++ b/plugins/platforms/drm/drm_output.h
+@@ -83,6 +83,10 @@ public:
+ 
+     bool supportsTransformations() const;
+ 
++    int softwareRotationAngle() const override {
++        return m_softwareRotationAngle;
++    }
++
+ private:
+     friend class DrmBackend;
+     friend class DrmCrtc;   // TODO: For use of setModeLegacy. Remove later when we allow multiple connectors per crtc
+@@ -130,6 +134,8 @@ private:
+     bool setGammaRamp(const GammaRamp &gamma) override;
+     QMatrix4x4 matrixDisplay(const QSize &s) const;
+ 
++    int angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b) const;
++
+     DrmBackend *m_backend;
+     DrmConnector *m_conn = nullptr;
+     DrmCrtc *m_crtc = nullptr;
+@@ -160,6 +166,8 @@ private:
+     int m_cursorIndex = 0;
+     bool m_hasNewCursor = false;
+     bool m_deleted = false;
++    int m_softwareRotationAngle = 0;
++    Qt::ScreenOrientation m_preferredOrientation = Qt::LandscapeOrientation;
+ };
+ 
+ }
+diff --git a/plugins/platforms/drm/egl_gbm_backend.cpp b/plugins/platforms/drm/egl_gbm_backend.cpp
+index 48ec495b2..5183b3eba 100644
+--- a/plugins/platforms/drm/egl_gbm_backend.cpp
++++ b/plugins/platforms/drm/egl_gbm_backend.cpp
+@@ -215,9 +215,9 @@ void EglGbmBackend::createOutput(DrmOutput *drmOutput)
+     }
+ }
+ 
+-bool EglGbmBackend::makeContextCurrent(const Output &output)
++bool EglGbmBackend::makeContextCurrent(const Output &_output)
+ {
+-    const EGLSurface surface = output.eglSurface;
++    const EGLSurface surface = _output.eglSurface;
+     if (surface == EGL_NO_SURFACE) {
+         return false;
+     }
+@@ -231,15 +231,15 @@ bool EglGbmBackend::makeContextCurrent(const Output &output)
+         qCWarning(KWIN_DRM) << "Error occurred while creating context " << error;
+         return false;
+     }
+-    // TODO: ensure the viewport is set correctly each time
+-    const QSize &overall = screens()->size();
+-    const QRect &v = output.output->geometry();
+-    // TODO: are the values correct?
+-
+-    qreal scale = output.output->scale();
+ 
++    DrmOutput* output = _output.output;
++    const QRect v = orientateRect(output, output->geometry());
++    const qreal scale = output->scale();
++    const QSize overall = screens()->size();
++    const QSize orientedOverall = output->orientateSize(overall) * scale;
+     glViewport(-v.x() * scale, (v.height() - overall.height() + v.y()) * scale,
+-               overall.width() * scale, overall.height() * scale);
++               orientedOverall.width(), orientedOverall.height());
++
+     return true;
+ }
+ 
+diff --git a/plugins/platforms/virtual/screens_virtual.h b/plugins/platforms/virtual/screens_virtual.h
+index ad20891cd..7af546c72 100644
+--- a/plugins/platforms/virtual/screens_virtual.h
++++ b/plugins/platforms/virtual/screens_virtual.h
+@@ -33,6 +33,9 @@ public:
+     VirtualScreens(VirtualBackend *backend, QObject *parent = nullptr);
+     ~VirtualScreens() override;
+     void init() override;
++    int rotation(int /*screen*/) const override {
++        return 0;
++    }
+ 
+ private:
+     void createOutputs();
+diff --git a/plugins/platforms/virtual/virtual_output.h b/plugins/platforms/virtual/virtual_output.h
+index 20f43fdb7..f10d75ba4 100644
+--- a/plugins/platforms/virtual/virtual_output.h
++++ b/plugins/platforms/virtual/virtual_output.h
+@@ -49,6 +49,10 @@ public:
+         return m_gammaResult;
+     }
+ 
++    int softwareRotationAngle() const override {
++        return 0;
++    }
++
+ private:
+     Q_DISABLE_COPY(VirtualOutput);
+     friend class VirtualBackend;
+diff --git a/plugins/platforms/wayland/egl_wayland_backend.cpp b/plugins/platforms/wayland/egl_wayland_backend.cpp
+index 74f285bfb..7e1b26136 100644
+--- a/plugins/platforms/wayland/egl_wayland_backend.cpp
++++ b/plugins/platforms/wayland/egl_wayland_backend.cpp
+@@ -240,13 +240,13 @@ bool EglWaylandBackend::makeContextCurrent(EglWaylandOutput *output)
+         return false;
+     }
+ 
+-    const QRect &v = output->m_waylandOutput->geometry();
+-
+-    qreal scale = output->m_waylandOutput->scale();
+-
++    const QRect v = orientateRect(output->m_waylandOutput, output->m_waylandOutput->geometry());
++    const qreal scale = output->m_waylandOutput->scale();
+     const QSize overall = screens()->size();
++    const QSize orientedOverall = output->m_waylandOutput->orientateSize(overall) * scale;
+     glViewport(-v.x() * scale, (v.height() - overall.height() + v.y()) * scale,
+-               overall.width() * scale, overall.height() * scale);
++               orientedOverall.width(), orientedOverall.height());
++
+     return true;
+ }
+ 
+diff --git a/plugins/platforms/x11/standalone/screens_xrandr.h b/plugins/platforms/x11/standalone/screens_xrandr.h
+index 9a6d8f60d..79d4d0e25 100644
+--- a/plugins/platforms/x11/standalone/screens_xrandr.h
++++ b/plugins/platforms/x11/standalone/screens_xrandr.h
+@@ -36,6 +36,9 @@ public:
+     void init() override;
+ 
+     QSize displaySize() const override;
++    int rotation(int /*screen*/) const override {
++        return 0;
++    }
+ 
+     using QObject::event;
+     bool event(xcb_generic_event_t *event) override;
+diff --git a/plugins/scenes/opengl/scene_opengl.cpp b/plugins/scenes/opengl/scene_opengl.cpp
+index e7460375b..0f77a6189 100644
+--- a/plugins/scenes/opengl/scene_opengl.cpp
++++ b/plugins/scenes/opengl/scene_opengl.cpp
+@@ -661,6 +661,7 @@ qint64 SceneOpenGL::paint(QRegion damage, ToplevelList toplevels)
+         // trigger start render timer
+         m_backend->prepareRenderingFrame();
+         for (int i = 0; i < screens()->count(); ++i) {
++            const int rotation = screens()->rotation(i);
+             const QRect &geo = screens()->geometry(i);
+             QRegion update;
+             QRegion valid;
+@@ -678,8 +679,9 @@ qint64 SceneOpenGL::paint(QRegion damage, ToplevelList toplevels)
+             }
+ 
+             int mask = 0;
+-            updateProjectionMatrix();
+-            paintScreen(&mask, damage.intersected(geo), repaint, &update, &valid, projectionMatrix(), geo);   // call generic implementation
++            updateProjectionMatrix(rotation);
++
++            paintScreen(&mask, damage.intersected(geo), repaint, &update, &valid, rotation, projectionMatrix(), geo);   // call generic implementation
+             paintCursor();
+ 
+             GLVertexBuffer::streamingBuffer()->endOfFrame();
+@@ -703,8 +705,8 @@ qint64 SceneOpenGL::paint(QRegion damage, ToplevelList toplevels)
+         GLRenderTarget::setVirtualScreenScale(1);
+ 
+         int mask = 0;
+-        updateProjectionMatrix();
+-        paintScreen(&mask, damage, repaint, &updateRegion, &validRegion, projectionMatrix());   // call generic implementation
++        updateProjectionMatrix(0);
++        paintScreen(&mask, damage, repaint, &updateRegion, &validRegion, 0, projectionMatrix());   // call generic implementation
+ 
+         if (!GLPlatform::instance()->isGLES()) {
+             const QSize &screenSize = screens()->size();
+@@ -969,7 +971,7 @@ SceneOpenGL2::~SceneOpenGL2()
+     }
+ }
+ 
+-QMatrix4x4 SceneOpenGL2::createProjectionMatrix() const
++QMatrix4x4 SceneOpenGL2::createProjectionMatrix(int rotation) const
+ {
+     // Create a perspective projection with a 60° field-of-view,
+     // and an aspect ratio of 1.0.
+@@ -985,6 +987,9 @@ QMatrix4x4 SceneOpenGL2::createProjectionMatrix() const
+ 
+     QMatrix4x4 projection;
+     projection.frustum(xMin, xMax, yMin, yMax, zNear, zFar);
++    if (rotation != 0) {
++        projection.rotate(rotation, 0, 0, 1);
++    }
+ 
+     // Create a second matrix that transforms screen coordinates
+     // to world coordinates.
+@@ -1001,9 +1006,9 @@ QMatrix4x4 SceneOpenGL2::createProjectionMatrix() const
+     return projection * matrix;
+ }
+ 
+-void SceneOpenGL2::updateProjectionMatrix()
++void SceneOpenGL2::updateProjectionMatrix(int rotation)
+ {
+-    m_projectionMatrix = createProjectionMatrix();
++    m_projectionMatrix = createProjectionMatrix(rotation);
+ }
+ 
+ void SceneOpenGL2::paintSimpleScreen(int mask, QRegion region)
+diff --git a/plugins/scenes/opengl/scene_opengl.h b/plugins/scenes/opengl/scene_opengl.h
+index 3c0d54b87..5be16654b 100644
+--- a/plugins/scenes/opengl/scene_opengl.h
++++ b/plugins/scenes/opengl/scene_opengl.h
+@@ -94,7 +94,7 @@ protected:
+     void handleGraphicsReset(GLenum status);
+ 
+     virtual void doPaintBackground(const QVector<float> &vertices) = 0;
+-    virtual void updateProjectionMatrix() = 0;
++    virtual void updateProjectionMatrix(int rotation) = 0;
+ 
+ protected:
+     bool init_ok;
+@@ -128,12 +128,12 @@ protected:
+     void doPaintBackground(const QVector< float >& vertices) override;
+     Scene::Window *createWindow(Toplevel *t) override;
+     void finalDrawWindow(EffectWindowImpl* w, int mask, QRegion region, WindowPaintData& data) override;
+-    void updateProjectionMatrix() override;
++    void updateProjectionMatrix(int rotation) override;
+     void paintCursor() override;
+ 
+ private:
+     void performPaintWindow(EffectWindowImpl* w, int mask, QRegion region, WindowPaintData& data);
+-    QMatrix4x4 createProjectionMatrix() const;
++    QMatrix4x4 createProjectionMatrix(int rotation) const;
+ 
+ private:
+     LanczosFilter *m_lanczosFilter;
+diff --git a/plugins/scenes/qpainter/scene_qpainter.cpp b/plugins/scenes/qpainter/scene_qpainter.cpp
+index bf462071e..c05731139 100644
+--- a/plugins/scenes/qpainter/scene_qpainter.cpp
++++ b/plugins/scenes/qpainter/scene_qpainter.cpp
+@@ -115,7 +115,7 @@ qint64 SceneQPainter::paint(QRegion damage, ToplevelList toplevels)
+             m_painter->setWindow(geometry);
+ 
+             QRegion updateRegion, validRegion;
+-            paintScreen(&mask, damage.intersected(geometry), QRegion(), &updateRegion, &validRegion);
++            paintScreen(&mask, damage.intersected(geometry), QRegion(), &updateRegion, &validRegion, 0);
+             overallUpdate = overallUpdate.united(updateRegion);
+             paintCursor();
+ 
+@@ -133,7 +133,7 @@ qint64 SceneQPainter::paint(QRegion damage, ToplevelList toplevels)
+             damage = screens()->geometry();
+         }
+         QRegion updateRegion, validRegion;
+-        paintScreen(&mask, damage, QRegion(), &updateRegion, &validRegion);
++        paintScreen(&mask, damage, QRegion(), &updateRegion, &validRegion, 0);
+ 
+         paintCursor();
+         m_backend->showOverlay();
+diff --git a/plugins/scenes/xrender/scene_xrender.cpp b/plugins/scenes/xrender/scene_xrender.cpp
+index 24ad72bb2..f048be4be 100644
+--- a/plugins/scenes/xrender/scene_xrender.cpp
++++ b/plugins/scenes/xrender/scene_xrender.cpp
+@@ -256,7 +256,7 @@ qint64 SceneXrender::paint(QRegion damage, ToplevelList toplevels)
+ 
+     int mask = 0;
+     QRegion updateRegion, validRegion;
+-    paintScreen(&mask, damage, QRegion(), &updateRegion, &validRegion);
++    paintScreen(&mask, damage, QRegion(), &updateRegion, &validRegion, 0);
+ 
+     m_backend->showOverlay();
+ 
+diff --git a/scene.cpp b/scene.cpp
+index 55c0a2d14..2998df331 100644
+--- a/scene.cpp
++++ b/scene.cpp
+@@ -105,7 +105,7 @@ Scene::~Scene()
+ 
+ // returns mask and possibly modified region
+ void Scene::paintScreen(int* mask, const QRegion &damage, const QRegion &repaint,
+-                        QRegion *updateRegion, QRegion *validRegion, const QMatrix4x4 &projection, const QRect &outputGeometry)
++                        QRegion *updateRegion, QRegion *validRegion, int screenRotation, const QMatrix4x4 &projection, const QRect &outputGeometry)
+ {
+     const QSize &screenSize = screens()->size();
+     const QRegion displayRegion(0, 0, screenSize.width(), screenSize.height());
+@@ -145,7 +145,7 @@ void Scene::paintScreen(int* mask, const QRegion &damage, const QRegion &repaint
+         paintBackground(region);
+     }
+ 
+-    ScreenPaintData data(projection, outputGeometry);
++    ScreenPaintData data(projection, screenRotation, outputGeometry);
+     effects->paintScreen(*mask, region, data);
+ 
+     foreach (Window *w, stacking_order) {
+diff --git a/scene.h b/scene.h
+index 4b128f7fb..a8442ea23 100644
+--- a/scene.h
++++ b/scene.h
+@@ -213,7 +213,7 @@ protected:
+     void clearStackingOrder();
+     // shared implementation, starts painting the screen
+     void paintScreen(int *mask, const QRegion &damage, const QRegion &repaint,
+-                     QRegion *updateRegion, QRegion *validRegion, const QMatrix4x4 &projection = QMatrix4x4(), const QRect &outputGeometry = QRect());
++                     QRegion *updateRegion, QRegion *validRegion, int screenRotation, const QMatrix4x4 &projection = QMatrix4x4(), const QRect &outputGeometry = QRect());
+     // Render cursor texture in case hardware cursor is disabled/non-applicable
+     virtual void paintCursor() = 0;
+     friend class EffectsHandlerImpl;
+diff --git a/screens.h b/screens.h
+index 13c1414e2..45bdd6f36 100644
+--- a/screens.h
++++ b/screens.h
+@@ -157,6 +157,8 @@ public:
+         return m_orientationSensor;
+     }
+ 
++    virtual int rotation(int screen) const = 0;
++
+ public Q_SLOTS:
+     void reconfigure();
+ 
+-- 
+2.17.1
+

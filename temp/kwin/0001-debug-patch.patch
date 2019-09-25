@@ -1,0 +1,47 @@
+From 1da57af03fd29417932ba2db85f4d6762e2d0194 Mon Sep 17 00:00:00 2001
+From: Bhushan Shah <bhush94@gmail.com>
+Date: Wed, 25 Sep 2019 13:33:56 +0530
+Subject: [PATCH] debug patch
+
+---
+ orientation_sensor.cpp               | 4 ++++
+ plugins/platforms/drm/drm_output.cpp | 1 +
+ 2 files changed, 5 insertions(+)
+
+diff --git a/orientation_sensor.cpp b/orientation_sensor.cpp
+index d3a263efa..8538da451 100644
+--- a/orientation_sensor.cpp
++++ b/orientation_sensor.cpp
+@@ -27,6 +27,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ #include <KStatusNotifierItem>
+ #include <KLocalizedString>
+ 
++#include <QDebug>
++
+ namespace KWin
+ {
+ 
+@@ -37,6 +39,8 @@ OrientationSensor::OrientationSensor(QObject *parent)
+     connect(m_sensor, &QOrientationSensor::readingChanged, this, &OrientationSensor::updateState);
+     connect(m_sensor, &QOrientationSensor::activeChanged, this, &OrientationSensor::refresh);
+ 
++    qDebug() << "BSHAH: THISSSSSSSSS  LOADS";
++
+     new OrientationSensorAdaptor(this);
+ }
+ 
+diff --git a/plugins/platforms/drm/drm_output.cpp b/plugins/platforms/drm/drm_output.cpp
+index 278df6444..a2c4d944b 100644
+--- a/plugins/platforms/drm/drm_output.cpp
++++ b/plugins/platforms/drm/drm_output.cpp
+@@ -264,6 +264,7 @@ bool DrmOutput::init(drmModeConnector *connector)
+     setDpmsSupported(true);
+ 
+     if (isInternal()) {
++        qDebug() << "BSHAH: THIS IS INTERNAL";
+         connect(kwinApp(), &Application::screensCreated, this,
+             [this] {
+                 connect(screens()->orientationSensor(), &OrientationSensor::orientationChanged, this, &DrmOutput::automaticRotation);
+-- 
+2.17.1
+
