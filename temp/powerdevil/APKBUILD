@@ -11,6 +11,7 @@ depends_dev="qt5-qtbase-dev qt5-qtx11extras-dev kactivities-dev kauth-dev kidlet
 makedepends="$depends_dev extra-cmake-modules kdoctools-dev"
 source="https://download.kde.org/unstable/plasma/$pkgver/$pkgname-$pkgver.tar.xz"
 subpackages="$pkgname-dev $pkgname-libs $pkgname-doc $pkgname-lang"
+options="!check"
 
 build() {
 	cmake \
@@ -18,10 +19,6 @@ build() {
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib
 	make
-}
-
-check() {
-	CTEST_OUTPUT_ON_FAILURE=TRUE ctest
 }
 
 package() {

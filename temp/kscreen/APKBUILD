@@ -21,11 +21,6 @@ build() {
 	make
 }
 
-check() {
-	# kscreen-kded-configtest is broken
-	CTEST_OUTPUT_ON_FAILURE=TRUE xvfb-run ctest -E "kscreen-kded-configtest"
-}
-
 package() {
 	DESTDIR="$pkgdir" make install
 }

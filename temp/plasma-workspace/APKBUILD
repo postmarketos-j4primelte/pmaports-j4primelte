@@ -9,7 +9,6 @@ license="(GPL-2.0-only OR GPL-3.0-only) AND LGPL-2.1-or-later AND GPL-2.0-or-lat
 depends="tzdata qt5-qtquickcontrols kirigami2 kinit qt5-qttools kwin kactivitymanagerd milou plasma-integration qtchooser kded"
 depends_dev="plasma-framework-dev krunner-dev kjsembed-dev knotifyconfig-dev kdesu-dev knewstuff-dev kwallet-dev kidletime-dev kdeclarative-dev ki18n-dev kcmutils-dev ktextwidgets-dev kdelibs4support-dev kcrash-dev kglobalaccel-dev kdbusaddons-dev kwayland-dev kcoreaddons-dev kded-dev libksysguard-dev kpackage-dev kscreenlocker-dev phonon-dev zlib-dev kitemmodels-dev networkmanager-qt-dev baloo-dev ktexteditor-dev kwin-dev kholidays-dev prison-dev gpsd-dev iso-codes-dev kpeople-dev kactivities-stats-dev libkscreen-dev appstream-qt"
 makedepends="$depends_dev extra-cmake-modules kdoctools-dev libxtst-dev"
-checkdepends="xvfb-run"
 source="https://download.kde.org/unstable/plasma/${pkgver%.1}/$pkgname-$pkgver.tar.xz"
 subpackages="$pkgname-dev $pkgname-libs $pkgname-doc $pkgname-lang"
 options="!nocheck"
@@ -27,13 +26,6 @@ build() {
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib
 	make
-}
-
-check() {
-	cd "$builddir"/build
-	# nightcolortest requires running dbus
-	# testdesktop is broken
-	CTEST_OUTPUT_ON_FAILURE=TRUE xvfb-run ctest -E "(nightcolortest|testdesktop)"
 }
 
 package() {
