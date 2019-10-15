@@ -1,21 +1,26 @@
 pkgname="device-motorola-maserati"
 pkgdesc="Motorola Motorola Droid 4"
-pkgver=1
+pkgver=2
 pkgrel=0
 url="https://postmarketos.org"
 license="MIT"
 arch="armv7"
 options="!check !archcheck"
 depends="postmarketos-base linux-motorola-maserati"
-source="deviceinfo boot.cfg"
+makedepends="devicepkg-dev"
+source="deviceinfo boot.cfg initfs-hook.sh"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
 
 package() {
-	install -Dm644 "$srcdir"/deviceinfo \
-		"$pkgdir"/etc/deviceinfo
+	devicepkg_package $startdir $pkgname
 
 	install -Dm644 "$srcdir"/boot.cfg \
 		"$pkgdir"/boot/boot/boot.cfg
 
 }
 sha512sums="8823e25903cc9ced477827932792465ba89aba7ed0063308ebbb54096551367e5e82297cafe8823c1c4754e6a8b55be5d9a8df36140106b6a993757c65af1f45  deviceinfo
-5897d8d1ad950a7fd1ff3c955bba32545eda7db6ff7afb841bf1e20aaf5f4b91454e9a9df2f3d244505ad4bd866c506723a429eb57623cfcb373445599c0434d  boot.cfg"
+5897d8d1ad950a7fd1ff3c955bba32545eda7db6ff7afb841bf1e20aaf5f4b91454e9a9df2f3d244505ad4bd866c506723a429eb57623cfcb373445599c0434d  boot.cfg
+f41ab00b14719d62dc34d5031888badd1ac3a77323bc612b39d51dea4ffdf967a8955d4f979cece63acaeb2ec83427c778edeb797a006f88e82f636e76ad4255  initfs-hook.sh"
