@@ -7,17 +7,33 @@ url="https://postmarketos.org"
 license="MIT"
 arch="armv7"
 options="!check !archcheck"
-depends="postmarketos-base linux-kobo-clara mesa-dri-swrast"
+depends="postmarketos-base linux-kobo-clara mesa-dri-swrast uboot-tools u-boot-mx6sllntx"
 makedepends="devicepkg-dev"
-source="deviceinfo"
+source="deviceinfo uboot-script.cmd"
 
 build() {
-	devicepkg_build $startdir $pkgname
+        devicepkg_build $startdir $pkgname
+        mkimage \
+                -A arm \
+                -O linux \
+                -T script \
+                -C none \
+                -a 0 \
+                -e 0 \
+                -n postmarketos \
+                -d "$srcdir"/uboot-script.cmd \
+                "$srcdir"/boot.scr
 }
+
 
 package() {
 	devicepkg_package $startdir $pkgname
+	# U-Boot
+	install -Dm644 "$srcdir"/boot.scr \
+		"$pkgdir"/boot/boot.scr
+
 }
 
-sha512sums="(run 'pmbootstrap checksum device-kobo-clara' to fill)"
 
+sha512sums="14811135c5cc4915204aaad5906f8e98fefb9c4056bcb27194ad0696b777cca59107b6561d0be3c81a26d58d28c6554761de4555e0d122dc3ee29b5c69f06809  deviceinfo
+85d41766bc33e2d38c6481ec9db224448e0dc3ab392513d7d9bcaa0c6495e0cf3641b147e9c4dc7aff2d9eb28bd7e8f9fdfb511858259196fd5358206138ab58  uboot-script.cmd"
