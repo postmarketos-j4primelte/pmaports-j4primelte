@@ -1,0 +1,23 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=py3-spidev
+pkgver=3.4
+pkgrel=0
+pkgdesc="A python module for interfacing with SPI devices from user space via the spidev linux kernel driver"
+arch="all"
+url="https://github.com/doceme/py-spidev"
+license="MIT"
+depends="linux-headers"
+makedepends="py3-setuptools python3-dev linux-headers"
+source="$pkgname-$pkgver.tar.gz::https://github.com/doceme/py-spidev/archive/v$pkgver.tar.gz"
+options="!check" # No tests available
+builddir="$srcdir/py-spidev-$pkgver"
+
+build() {
+	python3 setup.py build
+}
+
+package() {
+	python3 setup.py install --prefix=/usr --root="$pkgdir"
+}
+sha512sums="3d3a66c8ff611fc006585c3109854d55da5d7c1eb9be9ea5704e0c6c06fab1c3c74a6442a69a11f6253bc658ef479dee8d9016fcc800e91e80d8995838505298  py3-spidev-3.4.tar.gz"
