@@ -1,0 +1,27 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=py3-luma-oled
+pkgver=2.4.1
+pkgrel=0
+pkgdesc="Python module to drive a SSD1306 / SSD1322 / SSD1325 / SSD1327 / SSD1331 / SSD1351 / SH1106 OLED"
+arch="noarch"
+url="https://luma-oled.readthedocs.io/"
+license="MIT"
+depends="jpeg py3-luma-core"
+makedepends="py3-setuptools python3-dev pytest pytest-cov py3-pillow py3-smbus2 py3-mock py3-smbus py3-spidev py3-monotonic"
+source="$pkgname-$pkgver.tar.gz::https://github.com/rm-hull/luma.oled/archive/$pkgver.tar.gz"
+options="!check" # Broken
+builddir="$srcdir/luma.oled-$pkgver"
+
+build() {
+	python3 setup.py build
+}
+
+check() {
+	python3 setup.py test
+}
+
+package() {
+	python3 setup.py install --prefix=/usr --root="$pkgdir"
+}
+sha512sums="d1fa019bc4541c6168f39f02340f3e03a85e2d6e064e6581391a17a8f00ba7d4a0f35482fbf32705435468856ae48af7f2be71aa36ebb8403f0fdbe7a63cb2c1  py3-luma-oled-2.4.1.tar.gz"
