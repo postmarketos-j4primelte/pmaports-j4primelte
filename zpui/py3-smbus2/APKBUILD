@@ -1,0 +1,26 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgbase=smbus2
+pkgname=py3-smbus2
+pkgver=0.3.0
+pkgrel=0
+pkgdesc=" A drop-in replacement for smbus-cffi/smbus-python in pure Python"
+arch="noarch"
+url="https://github.com/kplindegaard/smbus2"
+license="MIT"
+makedepends="py3-setuptools python3-dev py3-mock py3-nose"
+source="$pkgname-$pkgver.tar.gz::https://github.com/kplindegaard/smbus2/archive/$pkgver.tar.gz"
+builddir="$srcdir/$pkgbase-$pkgver"
+
+build() {
+	python3 setup.py build
+}
+
+check() {
+	python3 setup.py test
+}
+
+package() {
+	python3 setup.py install --prefix=/usr --root="$pkgdir"
+}
+sha512sums="4194b145bb22a09531bd81cf68ba5e1c93b15d2cb1f54cefe8f8c79b79cdda273532b8a4beebd3b9d4d4a1d442cd10692bdff41a927ec22c04c07563997804a8  py3-smbus2-0.3.0.tar.gz"
