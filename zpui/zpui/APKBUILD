@@ -1,0 +1,25 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=zpui
+pkgver=0_git20191031
+pkgrel=0
+_commit="2cab816b06e64d13e5c734f1ebcdbf6c8ed93224"
+pkgdesc="Official ZeroPhone UI framework, based on pyLCI"
+arch="noarch"
+url="http://zpui.rtfd.org/"
+license="Apache"
+depends="py3-setuptools py3-smbus py3-serial py3-nmap py3-vobject py3-pytest py3-jsonrpclib py3-mock py3-dbus py3-luma-oled py3-otp pygame py3-gobject3 py3-serial"
+makedepends="$depends_dev python2 py2-pip"
+source="$pkgname-$_commit.tar.gz::https://github.com/zerophone/zpui/archive/$_commit.tar.gz
+	setup-py.patch"
+builddir="$srcdir/ZPUI-$_commit"
+
+build() {
+	python3 setup.py build
+}
+
+package() {
+	python3 setup.py install --prefix=/usr --root="$pkgdir"
+}
+sha512sums="d54b044f3016aa85e04ee639adcc5fa18a5eb9a0d1c6682c1023d52279b626fb664455c3152fd4860276287da834ee07c907671d6084aeac07b0ccdca66d0502  zpui-2cab816b06e64d13e5c734f1ebcdbf6c8ed93224.tar.gz
+c2e391fa5ce625ae39027c3e92766bad5f2f7d4bcc9654366b84c9ab04afa9ca2839414311966daa11cbe4ad041ddbb9be7c7483b2dc3b9da66cd2f1c1335cf5  setup-py.patch"

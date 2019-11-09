@@ -1,0 +1,26 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=py3-zerophone-hw
+pkgver=0.0.1
+pkgrel=0
+pkgdesc="ZeroPhone hardware API library for Python"
+arch="noarch !x86 !x86_64 !aarch64" # Only on armhf and armv7 due to py3-rpigpio
+url="https://github.com/ZeroPhone/ZeroPhone-API-Python"
+license="GPL-3.0-only"
+depends="py3-rpigpio"
+makedepends="py3-setuptools python3-dev"
+source="$pkgname-$pkgver.tar.gz::https://github.com/zerophone/zerophone-api-python/archive/$pkgver.tar.gz"
+builddir="$srcdir/ZeroPhone-API-Python-$pkgver"
+
+#build() {
+	#python3 setup.py build
+#}
+
+#check() {
+#	python3 setup.py test
+#}
+
+package() {
+	python3 setup.py install --prefix="$pkgdir"/usr --root="$pkgdir"
+}
+sha512sums="b6aee9d1d5c7b63766028818416f4e1194a3cac8e29d0ffa513c4c22bfd63f11e70377a04bb2d446dd2b2a9dc63dfb51695dc38b3c13087f52c2634f76751012  py3-zerophone-hw-0.0.1.tar.gz"
