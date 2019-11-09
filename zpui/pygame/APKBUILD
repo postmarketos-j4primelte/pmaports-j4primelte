@@ -1,0 +1,27 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgbase=pygame_sdl2
+pkgname=pygame
+pkgver=7.3.5.606
+pkgrel=0
+pkgdesc="A library for making multimedia applications like games built on top of the excellent SDL library"
+arch="all"
+url="https://www.pygame.org/"
+license="LGPL-2.1i-only AND Zlib"
+makedepends="py3-setuptools python3-dev freetype-dev sdl2-dev sdl2_image-dev sdl2_mixer-dev sdl2_ttf-dev jpeg-dev cython-dev"
+source="$pkgname-$pkgver.tar.gz::https://github.com/renpy/pygame_sdl2/archive/renpy-$pkgver.tar.gz"
+options="!check" # Broken, requires package to be installed before testing which just doesn't happen
+builddir="$srcdir/pygame_sdl2-renpy-$pkgver"
+
+build() {
+	python3 setup.py build
+}
+
+check() {
+	python3 setup.py test
+}
+
+package() {
+	python3 setup.py install --prefix=/usr --root="$pkgdir"
+}
+sha512sums="ebbf05e6ddea5f78c814fc400f1172bd5c274e8df219b99a70b159bee6eba271db4cf662a823174308f5d4d4c19167749ee1dfa10ff3ecee5cff6827ec69cf51  pygame-7.3.5.606.tar.gz"
