@@ -1,0 +1,29 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgbase=luma.core
+pkgname=py3-luma-core
+pkgver=1.12.0
+pkgrel=0
+pkgdesc="Library providing a canvas and functionality to support drawing primitives and text-rendering capabilities for small displays"
+arch="noarch" # Because of rpigpio
+url="https://luma-oled.readthedocs.io/"
+license="MIT"
+depends="py3-smbus2 py3-pillow py3-rpio py3-spidev"
+makedepends="py3-setuptools python3-dev"
+checkdepends="pytest pytest-cov py3-rpio py3-pbr py3-coverage py3-mock py3-smbus2 py3-pillow py3-spidev py3-monotonic linux-headers"
+source="$pkgname-$pkgver.tar.gz::https://github.com/rm-hull/luma.core/archive/$pkgver.tar.gz"
+options="!check" # Broken
+builddir="$srcdir/$pkgbase-$pkgver"
+
+build() {
+	python3 setup.py build
+}
+
+check() {
+	python3 setup.py test
+}
+
+package() {
+	python3 setup.py install --prefix=/usr --root="$pkgdir"
+}
+sha512sums="737f3acce8edc281f4695578c57b8a5e67d41a09a86c2c1c442d35f2943d7ba38e9d2512a1962231a0b81483dad126fa12e492b15500351c4fc0d8cbb0e5ee22  py3-luma-core-1.12.0.tar.gz"
