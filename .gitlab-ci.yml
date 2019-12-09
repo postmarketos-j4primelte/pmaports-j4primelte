@@ -111,10 +111,42 @@ aports-static-upstream:
     expire_in: 1 week
 
 # build changed aports
-aports-build:
+build-aports-x86_64:
   stage: second
   <<: *only-default
   before_script:
     - .gitlab-ci/install_pmbootstrap.sh git
   script:
-    - PYTHONUNBUFFERED=1 su pmos -c ".gitlab-ci/build_changed_aports.py"
+    - PYTHONUNBUFFERED=1 su pmos -c ".gitlab-ci/build_changed_aports.py x86_64"
+
+build-aports-x86:
+  stage: second
+  <<: *only-default
+  before_script:
+    - .gitlab-ci/install_pmbootstrap.sh git
+  script:
+    - PYTHONUNBUFFERED=1 su pmos -c ".gitlab-ci/build_changed_aports.py x86"
+
+build-aports-aarch64:
+  stage: second
+  <<: *only-default
+  before_script:
+    - .gitlab-ci/install_pmbootstrap.sh git
+  script:
+    - PYTHONUNBUFFERED=1 su pmos -c ".gitlab-ci/build_changed_aports.py aarch64"
+
+build-aports-armv7:
+  stage: second
+  <<: *only-default
+  before_script:
+    - .gitlab-ci/install_pmbootstrap.sh git
+  script:
+    - PYTHONUNBUFFERED=1 su pmos -c ".gitlab-ci/build_changed_aports.py armv7"
+
+build-aports-armhf:
+  stage: second
+  <<: *only-default
+  before_script:
+    - .gitlab-ci/install_pmbootstrap.sh git
+  script:
+    - PYTHONUNBUFFERED=1 su pmos -c ".gitlab-ci/build_changed_aports.py armhf"

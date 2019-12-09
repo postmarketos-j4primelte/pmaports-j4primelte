@@ -134,3 +134,28 @@ def check_build(packages, verify_only=False):
     else:
         run_pmbootstrap(["--details-to-stdout", "build", "--strict",
                          "--force"] + list(packages))
+
+
+def get_package_arches(apkbuild):
+    with open(get_pmaports_dir() + "/" + apkbuild) as f:
+        lines = f.readlines()
+
+        for line in lines:
+            if "arch=" in line:
+                # Get rid of " and \n in the string
+                line = line.replace("\"", "").replace("\n", "")
+                apkbuild_arches = line.split("=")[1].split(" ")
+
+                arches = None
+                if "all" in apkbuild_arches:
+                    arches = ["aarch64", "armv7", "armhf", "x86_64", "x86"]
+
+                    if len(apkbuild_arches) > 1:
+                        for arch in apkbuild_arches:
+                            if "!" in arch:
+                                arches.remove(arch.replace("!", ""))
+
+                else:
+                    arches = apkbuild_arches
+
+                return arches
