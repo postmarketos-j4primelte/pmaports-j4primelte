@@ -10,7 +10,7 @@ license="GPL-3.0-or-later"
 makedepends="meson ninja rust cargo bash glib-dev wayland-protocols wayland-dev gtk+3.0-dev libcroco-dev"
 checkdepends="xvfb-run"
 source="https://source.puri.sm/Librem5/squeekboard/-/archive/v$pkgver/squeekboard-v$pkgver.tar.gz"
-subpackages="$pkgname-lang"
+subpackages=""
 options="!check" # broken with cross compiling
 builddir="$srcdir/$pkgname-v$pkgver"
 
@@ -26,4 +26,4 @@ check() {
 package() {
 	DESTDIR="$pkgdir" ninja -C _build install
 }
-sha512sums="ba277962e0d851298438e29c9bd58b11db058e427ae91e6a5b80e2147bc3ee7c0bbc9a8424205df19d976cac82b3a6e625a373f680f0b5cf556f0e7698cfc0f7  squeekboard-v1.2.2.tar.gz"
+sha512sums="d3861ffe612515bacd841429bd54973244e424bfc86ce333e143aa83101f6106bcb965e1cb9922da88455010dbbadd017b58a463b3e65a5ff4d154575f94b4ca  squeekboard-v1.4.0.tar.gz"

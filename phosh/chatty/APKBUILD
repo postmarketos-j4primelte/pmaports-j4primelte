@@ -24,4 +24,4 @@ check() {
 package() {
 	DESTDIR="$pkgdir" ninja -C _build install
 }
-sha512sums="ea939160716a33de520551464036e0f126f7debe1088b47e33938a93443c91e40c5f81e21bde172dc5255df5bd4a90a7730aef8599a07eb178dc24953a3ca0c4  chatty-.tar.gz"
+sha512sums="a3bf3cc3e0149193a46ad13c4c39d183c22bc3b7f104628f381c3d67a95d4eaf6962b264c31e4e8fea343c6f28ed429771ad529a497c1858f4ee81e2db370ec7  chatty-.tar.gz"
