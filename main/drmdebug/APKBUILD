@@ -1,0 +1,24 @@
+# Contributor: Daniele Debernardi <drebrez@gmail.com>
+# Maintainer: Daniele Debernardi <drebrez@gmail.com>
+pkgname=drmdebug
+pkgver=1.0.0
+pkgrel=0
+pkgdesc="DRM debugging tool"
+url="https://postmarketos.org"
+arch="all"
+license="GPL-3.0-or-later"
+makedepends="linux-headers libdrm-dev"
+source="drmdebug.c"
+options="!check" # No tests
+builddir="$srcdir/"
+
+build() {
+	gcc drmdebug.c -o drmdebug.o -c -I/usr/include/libdrm -ldrm
+	gcc drmdebug.o -o drmdebug -I/usr/include/libdrm -ldrm
+}
+
+package() {
+	install -Dm755 "${builddir}/drmdebug" \
+		"${pkgdir}/usr/sbin/drmdebug"
+}
+sha512sums="e6ae4caa471f5220c1397a6af015d4ebcdc56ed871d4236d31871efff61383915bb5d9fe6c4b0becf5199df1c01e9db3d0084940ed9782444d3b45d9130e5333  drmdebug.c"
