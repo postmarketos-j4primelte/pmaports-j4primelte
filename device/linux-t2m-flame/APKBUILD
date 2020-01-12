@@ -12,7 +12,7 @@
 
 _vendor=t2m
 _flavor=t2m-flame
-_hash="03396c93577aafae7ca3603de1c74eafd30e7d54"
+_commit="03396c93577aafae7ca3603de1c74eafd30e7d54"
 _config="config-${_flavor}.armhf"
 
 pkgname=linux-${_flavor}
@@ -30,7 +30,7 @@ makedepends="dtbtool perl sed installkernel bash gmp-dev bc linux-headers elfuti
 options="!strip !check !tracedeps"
 install=
 source="
-	$pkgname-$_hash.tar.gz::https://github.com/mozilla-b2g/codeaurora_kernel_msm/archive/${_hash}.tar.gz
+	$pkgname-$_commit.tar.gz::https://github.com/mozilla-b2g/codeaurora_kernel_msm/archive/${_commit}.tar.gz
 	$_config
 	compiler-gcc6.h
 	00_fix_return_address.patch
@@ -55,7 +55,7 @@ if [ "${CC:0:5}" != "gcc6-" ]; then
 	CROSS_COMPILE="gcc6-$CROSS_COMPILE"
 fi
 
-ksrcdir="$srcdir/codeaurora_kernel_msm-$_hash"
+ksrcdir="$srcdir/codeaurora_kernel_msm-$_commit"
 
 prepare() {
 	local _patch_failed=
