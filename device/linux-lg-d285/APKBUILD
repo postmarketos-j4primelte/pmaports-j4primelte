@@ -6,7 +6,7 @@
 
 _vendor=lg
 _flavor=lg-d285
-_hash="75a583b12772acf3a6e7422cf781ddd7a9e9a5c5"
+_commit="75a583b12772acf3a6e7422cf781ddd7a9e9a5c5"
 _config="config-lg-d285.armhf"
 
 pkgname=linux-${_flavor}
@@ -24,7 +24,7 @@ makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev g
 options="!strip !check !tracedeps"
 install=
 source="
-	$pkgname-$_hash.tar.gz::https://github.com/LineageOS/android_kernel_lge_msm8226/archive/${_hash}.tar.gz
+	$pkgname-$_commit.tar.gz::https://github.com/LineageOS/android_kernel_lge_msm8226/archive/${_commit}.tar.gz
 	${_config}
 	compiler-gcc6.h
 	00_fix_return_address.patch
@@ -46,7 +46,7 @@ if [ "${CC:0:5}" != "gcc6-" ]; then
 	CROSS_COMPILE="gcc6-$CROSS_COMPILE"
 fi
 
-ksrcdir="$srcdir/android_kernel_lge_msm8226-${_hash}"
+ksrcdir="$srcdir/android_kernel_lge_msm8226-${_commit}"
 
 prepare() {
 	local _patch_failed=
