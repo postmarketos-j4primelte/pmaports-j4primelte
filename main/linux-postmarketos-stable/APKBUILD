@@ -1,5 +1,4 @@
 _flavor=postmarketos-stable
-_hash="7b6fbfd899b4133e4f789843e5967beb139ec4d2"
 _config="config-${_flavor}.${CARCH}"
 
 pkgname=linux-${_flavor}
@@ -9,7 +8,7 @@ case $pkgver in
 	*.*.*)	_kernver=${pkgver%.*};;
 	*.*) _kernver=$pkgver;;
 esac
-pkgrel=1
+pkgrel=2
 
 arch="x86_64 armhf armv7 aarch64"
 pkgdesc="Linux for pmOS supported chipsets (stable)"
