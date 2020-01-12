@@ -17,7 +17,7 @@
 
 _vendor=samsung
 _flavor=samsung-n7100
-_hash="5790cd7defee9cb6f9b392af4e3569e51230917a"
+_commit="5790cd7defee9cb6f9b392af4e3569e51230917a"
 _config="config-${_flavor}.armhf"
 
 pkgname=linux-${_flavor}
@@ -35,7 +35,7 @@ makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev g
 options="!strip !check !tracedeps"
 install=
 source="
-	$pkgname-$_hash.tar.gz::https://github.com/bigbiff/android_kernel_samsung_smdk4412/archive/${_hash}.tar.gz
+	$pkgname-$_commit.tar.gz::https://github.com/bigbiff/android_kernel_samsung_smdk4412/archive/${_commit}.tar.gz
 	$_config
 	compiler-gcc6.h
 	timeconst_fix.patch
@@ -57,7 +57,7 @@ if [ "${CC:0:5}" != "gcc6-" ]; then
 	CROSS_COMPILE="gcc6-$CROSS_COMPILE"
 fi
 
-ksrcdir="$srcdir/android_kernel_samsung_smdk4412-${_hash}"
+ksrcdir="$srcdir/android_kernel_samsung_smdk4412-${_commit}"
 
 prepare() {
 	local _patch_failed=
