@@ -12,7 +12,7 @@
 
 _vendor=lge
 _flavor=lg-dory
-_hash="6924014484d3406e3d2da384efc20e40e8a5ae80"
+_commit="6924014484d3406e3d2da384efc20e40e8a5ae80"
 _config="config-${_flavor}.armhf"
 
 pkgname=linux-${_flavor}
@@ -30,7 +30,7 @@ makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev g
 options="!strip !check !tracedeps"
 install=
 source="
-	$pkgname-$_hash.tar.gz::https://github.com/android/kernel_msm/archive/${_hash}.tar.gz
+	$pkgname-$_commit.tar.gz::https://github.com/android/kernel_msm/archive/${_commit}.tar.gz
 	$_config
 	compiler-gcc6.h
 	00_fix_return_address.patch
@@ -53,7 +53,7 @@ if [ "${CC:0:5}" != "gcc6-" ]; then
 	CROSS_COMPILE="gcc6-$CROSS_COMPILE"
 fi
 
-builddir="$srcdir/kernel_msm-${_hash}"
+builddir="$srcdir/kernel_msm-${_commit}"
 
 prepare() {
 	default_prepare
