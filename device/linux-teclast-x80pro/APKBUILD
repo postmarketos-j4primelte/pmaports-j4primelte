@@ -2,7 +2,6 @@
 # TODO: Merge the two packages so that the teclast-x80pro is on actual mainline/stable kernel.
 # The default QEMU kernel config is missing too many options to allow it to boot on a real x86_64 platform.
 _flavor=teclast-x80pro
-_hash="7b6fbfd899b4133e4f789843e5967beb139ec4d2"
 _config="config-${_flavor}.${CARCH}"
 
 pkgname=linux-${_flavor}
