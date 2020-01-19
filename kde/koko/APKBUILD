@@ -1,0 +1,41 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname="koko"
+pkgver="0_git20191001"
+pkgrel=0
+_commit="dc1f35cf38c5cb84356f8933afd80a74b4b9d576"
+pkgdesc="An Image Gallery application"
+url="https://github.com/kde/koko"
+arch="all"
+license="(LGPL-2.1-only OR LGPL-3.0-only) AND BSD-3-Clause"
+makedepends="extra-cmake-modules qt5-qtbase-dev qt5-qtdeclarative-dev qt5-qtlocation-dev ki18n-dev kdeclarative-dev kconfig-dev kdbusaddons-dev kio-dev kguiaddons-dev kcoreaddons-dev knotifications-dev kiconthemes-dev exiv2-dev"
+source="$pkgname-$_commit.tar.gz::https://github.com/KDE/koko/archive/$_commit.tar.gz"
+options="!check" # The only test is broken
+builddir="$srcdir/$pkgname-$_commit"
+
+prepare() {
+	default_prepare
+
+	mkdir "$builddir"/build
+}
+
+build() {
+	cd "$builddir"/build
+	cmake "$builddir" \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	make
+}
+
+check() {
+	cd "$builddir"/build
+	CTEST_OUTPUT_ON_FAILURE=TRUE ctest
+}
+
+package() {
+	cd "$builddir"/build
+	DESTDIR="$pkgdir" make install
+}
+
+sha512sums="9aaf19fa99797621737190234b9ee4983382b1f65d698d0cc168598ebe1e108e4ece73bee89d198c975d8deb73983f57932eab53d977a9505f8b1fa59c41b0c9  koko-dc1f35cf38c5cb84356f8933afd80a74b4b9d576.tar.gz"
