@@ -1,0 +1,7 @@
+#!/sbin/openrc-run
+
+command="/usr/bin/ofono-auto-enable"
+
+depend() {
+   need dbus
+}
