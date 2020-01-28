@@ -1,10 +1,10 @@
 # Maintainer: David Heidelberg <david@ixit.cz>
 pkgname=xf86-video-opentegra
 pkgver=0.6.0_git20191222
-pkgrel=0
+pkgrel=1
 pkgdesc="X.Org driver for NVIDIA tegra"
 url="https://github.com/grate-driver/xf86-video-opentegra"
-arch="armhf"
+arch="armhf armv7"
 license="MIT"
 subpackages="$pkgname-doc"
 depends="libdrm-grate"
