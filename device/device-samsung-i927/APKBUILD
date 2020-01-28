@@ -3,12 +3,11 @@
 pkgname="device-samsung-i927"
 pkgdesc="Samsung Captivate Glide"
 pkgver=0.3
-pkgrel=4
+pkgrel=5
 url="https://postmarketos.org"
 license="MIT"
 arch="armv7"
 options="!check !archcheck"
-# FIXME xf86-video-opentegra was removed because it doesn't build anymore, see postmarketOS/pmaports#339
 depends="postmarketos-base
 	linux-samsung-i927
 	mkbootimg
@@ -20,7 +19,7 @@ depends="postmarketos-base
 	mesa-demos
 	libvdpau-tegra"
 makedepends="devicepkg-dev"
-subpackages="$pkgname-nonfree-firmware:nonfree_firmware"
+subpackages="$pkgname-nonfree-firmware:nonfree_firmware $pkgname-x11"
 source="deviceinfo
 	modules-load.conf
 	HiFi.conf
@@ -69,6 +68,12 @@ package() {
 nonfree_firmware() {
 	pkgdesc="bcm4330 wifi firmware"
 	depends="firmware-samsung-i927"
+	mkdir "$subpkgdir"
+}
+
+x11() {
+	install_if="$pkgname xorg-server"
+	depends="xf86-video-opentegra"
 	mkdir "$subpkgdir"
 }
 
