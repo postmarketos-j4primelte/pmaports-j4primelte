@@ -1,0 +1,1340 @@
+diff --git a/libdiscover/backends/AlpineApkBackend/AlpineApkAuthHelper.cpp b/libdiscover/backends/AlpineApkBackend/AlpineApkAuthHelper.cpp
+new file mode 100644
+index 00000000..19236dcb
+--- /dev/null
++++ b/libdiscover/backends/AlpineApkBackend/AlpineApkAuthHelper.cpp
+@@ -0,0 +1,56 @@
++/***************************************************************************
++ *   Copyright © 2020 Alexey Min <alexey.min@gmail.com>                    *
++ *                                                                         *
++ *   This program is free software; you can redistribute it and/or         *
++ *   modify it under the terms of the GNU General Public License as        *
++ *   published by the Free Software Foundation; either version 2 of        *
++ *   the License or (at your option) version 3 or any later version        *
++ *   accepted by the membership of KDE e.V. (or its successor approved     *
++ *   by the membership of KDE e.V.), which shall act as a proxy            *
++ *   defined in Section 14 of version 3 of the license.                    *
++ *                                                                         *
++ *   This program is distributed in the hope that it will be useful,       *
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
++ *   GNU General Public License for more details.                          *
++ *                                                                         *
++ *   You should have received a copy of the GNU General Public License     *
++ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
++ ***************************************************************************/
++
++#include <QProcess>
++#include <QDebug>
++#include <QJsonDocument>
++#include <QJsonObject>
++#include <QJsonArray>
++#include <QFile>
++#include <KAuthHelperSupport>
++
++#include "AlpineApkAuthHelper.h"
++
++using namespace KAuth;
++
++AlpineApkAuthHelper::AlpineApkAuthHelper() {}
++
++ActionReply AlpineApkAuthHelper::test(const QVariantMap &args)
++{
++    const QString txt = args[QStringLiteral("txt")].toString();
++
++    ActionReply reply = ActionReply::HelperErrorReply();
++    QByteArray replyData(QByteArrayLiteral("ok"));
++
++    QFile f(QStringLiteral("/lol.txt"));
++    if (f.open(QIODevice::ReadWrite | QIODevice::Text)) {
++        f.write(txt.toUtf8());
++        f.close();
++
++        reply = ActionReply::SuccessReply();
++        reply.setData({
++            { QStringLiteral("reply"), replyData },
++        });
++    }
++
++    return reply;
++}
++
++KAUTH_HELPER_MAIN("org.kde.discover.alpineapkbackend", AlpineApkAuthHelper)
+diff --git a/libdiscover/backends/AlpineApkBackend/AlpineApkAuthHelper.h b/libdiscover/backends/AlpineApkBackend/AlpineApkAuthHelper.h
+new file mode 100644
+index 00000000..947dcb7a
+--- /dev/null
++++ b/libdiscover/backends/AlpineApkBackend/AlpineApkAuthHelper.h
+@@ -0,0 +1,35 @@
++/***************************************************************************
++ *   Copyright © 2020 Alexey Min <alexey.min@gmail.com>                    *
++ *                                                                         *
++ *   This program is free software; you can redistribute it and/or         *
++ *   modify it under the terms of the GNU General Public License as        *
++ *   published by the Free Software Foundation; either version 2 of        *
++ *   the License or (at your option) version 3 or any later version        *
++ *   accepted by the membership of KDE e.V. (or its successor approved     *
++ *   by the membership of KDE e.V.), which shall act as a proxy            *
++ *   defined in Section 14 of version 3 of the license.                    *
++ *                                                                         *
++ *   This program is distributed in the hope that it will be useful,       *
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
++ *   GNU General Public License for more details.                          *
++ *                                                                         *
++ *   You should have received a copy of the GNU General Public License     *
++ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
++ ***************************************************************************/
++
++#include <QObject>
++#include <QVariant>
++#include <KAuthActionReply>
++
++using namespace KAuth;
++
++class AlpineApkAuthHelper : public QObject
++{
++    Q_OBJECT
++public:
++    AlpineApkAuthHelper();
++
++public Q_SLOTS:
++    ActionReply test(const QVariantMap &args);
++};
+diff --git a/libdiscover/backends/AlpineApkBackend/AlpineApkBackend.cpp b/libdiscover/backends/AlpineApkBackend/AlpineApkBackend.cpp
+new file mode 100644
+index 00000000..ed016aef
+--- /dev/null
++++ b/libdiscover/backends/AlpineApkBackend/AlpineApkBackend.cpp
+@@ -0,0 +1,278 @@
++/***************************************************************************
++ *   Copyright © 2020 Alexey Min <alexey.min@gmail.com>                    *
++ *                                                                         *
++ *   This program is free software; you can redistribute it and/or         *
++ *   modify it under the terms of the GNU General Public License as        *
++ *   published by the Free Software Foundation; either version 2 of        *
++ *   the License or (at your option) version 3 or any later version        *
++ *   accepted by the membership of KDE e.V. (or its successor approved     *
++ *   by the membership of KDE e.V.), which shall act as a proxy            *
++ *   defined in Section 14 of version 3 of the license.                    *
++ *                                                                         *
++ *   This program is distributed in the hope that it will be useful,       *
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
++ *   GNU General Public License for more details.                          *
++ *                                                                         *
++ *   You should have received a copy of the GNU General Public License     *
++ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
++ ***************************************************************************/
++
++#include "AlpineApkBackend.h"
++#include "AlpineApkResource.h"
++#include "AlpineApkReviewsBackend.h"
++#include "AlpineApkTransaction.h"
++#include "AlpineApkSourcesBackend.h"
++#include "alpineapk_backend_logging.h"  // generated by ECM
++
++#include "resources/StandardBackendUpdater.h"
++#include "resources/SourcesModel.h"
++#include "Transaction/Transaction.h"
++#include "Category/Category.h"
++
++#include <KAboutData>
++#include <KLocalizedString>
++#include <KPluginFactory>
++#include <KConfigGroup>
++#include <KSharedConfig>
++#include <KAuthExecuteJob>
++
++#include <QDebug>
++#include <QLoggingCategory>
++#include <QThread>
++#include <QTimer>
++#include <QAction>
++
++DISCOVER_BACKEND_PLUGIN(AlpineApkBackend)
++
++AlpineApkBackend::AlpineApkBackend(QObject *parent)
++    : AbstractResourcesBackend(parent)
++    , m_updater(new StandardBackendUpdater(this))
++    , m_reviews(new AlpineApkReviewsBackend(this))
++    , m_startElements(120)
++{
++#ifndef QT_DEBUG
++    const_cast<QLoggingCategory &>(LOG_ALPINEAPK()).setEnabled(QtDebugMsg, false);
++#endif
++
++    qCDebug(LOG_ALPINEAPK) << "constructing backend!";
++
++    QTimer::singleShot(1000, this, &AlpineApkBackend::startCheckForUpdates);
++
++    QObject::connect(m_updater, &StandardBackendUpdater::updatesCountChanged,
++                     this, &AlpineApkBackend::updatesCountChanged);
++
++    populate();
++
++    SourcesModel::global()->addSourcesBackend(new AlpineApkSourcesBackend(this));
++}
++
++QVector<Category *> AlpineApkBackend::category() const
++{
++    // single root category
++    // we could add more, but Alpine apk does not have this concept
++    static Category *cat = new Category(
++                QStringLiteral("All packages"),    // displayName
++                QStringLiteral("package-x-generic"), // icon
++                {}, // orFilters
++                { displayName() }, // pluginName
++                {}, // subCategories
++                QUrl(), // decoration (what is it?)
++                false  // isAddons
++    );
++    return { cat };
++}
++
++void AlpineApkBackend::populate()
++{
++    qCDebug(LOG_ALPINEAPK) << "populating resources...";
++
++    if (m_apkdb.open(QtApk::Database::QTAPK_OPENF_READONLY)) {
++        m_availablePackages = m_apkdb.getAvailablePackages();
++        m_installedPackages = m_apkdb.getInstalledPackages();
++        m_apkdb.close();
++    }
++
++    if (m_availablePackages.size() > 0) {
++        for (const QtApk::Package &pkg: m_availablePackages) {
++            AlpineApkResource *res = new AlpineApkResource(pkg, this);
++            res->setCategoryName(QStringLiteral("all"));
++            res->setOriginSource(QStringLiteral("apk"));
++            res->setSection(QStringLiteral("dummy"));
++            const QString key = pkg.name.toLower();
++            m_resources.insert(key, res);
++            connect(res, &AlpineApkResource::stateChanged, this, &AlpineApkBackend::updatesCountChanged);
++        }
++        qCDebug(LOG_ALPINEAPK) << " available" << m_availablePackages.size()
++                               << "packages";
++    }
++    if (m_installedPackages.size() > 0) {
++        for (const QtApk::Package &pkg: m_installedPackages) {
++            const QString key = pkg.name.toLower();
++            if (m_resources.contains(key)) {
++                m_resources.value(key)->setState(AbstractResource::Installed);
++            }
++        }
++        qCDebug(LOG_ALPINEAPK) << " installed" << m_installedPackages.size()
++                               << "packages";
++    }
++}
++
++void AlpineApkBackend::handleKauthHelperReply(KJob *job)
++{
++    qCDebug(LOG_ALPINEAPK) << Q_FUNC_INFO;
++    KAuth::ExecuteJob* reply = static_cast<KAuth::ExecuteJob *>(job);
++    const QVariantMap replyData = reply->data();
++    if (reply->error() == 0) {
++        qCDebug(LOG_ALPINEAPK) << replyData[QLatin1String("reply")].toString();
++    } else {
++        const QString message = replyData.value(QLatin1String("errorString"), reply->errorString()).toString();
++        qCDebug(LOG_ALPINEAPK) << message;
++    }
++}
++
++void AlpineApkBackend::startCheckForUpdates()
++{
++    if (m_fetching) {
++        return;
++    }
++    qCDebug(LOG_ALPINEAPK) << "startCheckForUpdates()";
++
++    // temporary hack - finish updates check in 5 seconds
++    QTimer::singleShot(5000, this, &AlpineApkBackend::finishCheckForUpdates);
++
++    m_fetching = true;
++    emit fetchingChanged();
++
++    KAuth::Action testAction(QStringLiteral("org.kde.discover.alpineapkbackend.test"));
++    testAction.setHelperId(QStringLiteral("org.kde.discover.alpineapkbackend"));
++    testAction.setArguments({
++        { QStringLiteral("txt"), QLatin1String("Wooo!") },
++    });
++    if (!testAction.isValid()) {
++        qCWarning(LOG_ALPINEAPK) << "kauth action is not valid!";
++        return;
++    }
++
++    KAuth::ExecuteJob *reply = testAction.execute();
++    QObject::connect(reply, &KAuth::ExecuteJob::result,
++                     this, &AlpineApkBackend::handleKauthHelperReply);
++    reply->start();
++}
++
++void AlpineApkBackend::finishCheckForUpdates()
++{
++    m_fetching = false;
++    emit fetchingChanged();
++}
++
++int AlpineApkBackend::updatesCount() const
++{
++    qCDebug(LOG_ALPINEAPK) << "updatesCount(): " << m_updater->updatesCount();
++    return m_updater->updatesCount();
++}
++
++ResultsStream *AlpineApkBackend::search(const AbstractResourcesBackend::Filters &filter)
++{
++    QVector<AbstractResource*> ret;
++    if (!filter.resourceUrl.isEmpty()) {
++        return findResourceByPackageName(filter.resourceUrl);
++    } else {
++        for (AbstractResource *r: qAsConst(m_resources)) {
++            if (r->type() == AbstractResource::Technical
++                    && filter.state != AbstractResource::Upgradeable) {
++                continue;
++            }
++            if (r->state() < filter.state) {
++                continue;
++            }
++            if(r->name().contains(filter.search, Qt::CaseInsensitive)
++                    || r->comment().contains(filter.search, Qt::CaseInsensitive)) {
++                ret += r;
++            }
++        }
++    }
++    return new ResultsStream(QStringLiteral("AlpineApkStream"), ret);
++}
++
++ResultsStream *AlpineApkBackend::findResourceByPackageName(const QUrl &searchUrl)
++{
++//    if (search.isLocalFile()) {
++//        AlpineApkResource* res = new AlpineApkResource(
++//                    search.fileName(), AbstractResource::Technical, this);
++//        res->setSize(666);
++//        res->setState(AbstractResource::None);
++//        m_resources.insert(res->packageName(), res);
++//        connect(res, &AlpineApkResource::stateChanged, this, &AlpineApkBackend::updatesCountChanged);
++//        return new ResultsStream(QStringLiteral("AlpineApkStream-local"), { res });
++//    }
++
++    AlpineApkResource *result = nullptr;
++
++    // QUrl("appstream://org.kde.krita.desktop")
++    // smart workaround for appstream
++    if (searchUrl.scheme()  == QLatin1String("appstream")) {
++        // remove leading "org.kde."
++        QString pkgName = searchUrl.host();
++        if (pkgName.startsWith(QLatin1String("org.kde."))) {
++            pkgName = pkgName.mid(8);
++        }
++        // remove trailing ".desktop"
++        if (pkgName.endsWith(QLatin1String(".desktop"))) {
++            pkgName = pkgName.left(pkgName.length() - 8);
++        }
++        // now we can search for "krita" package
++        result = m_resources.value(pkgName);
++    }
++
++    if (!result) {
++        return new ResultsStream(QStringLiteral("AlpineApkStream"), {});
++    }
++    return new ResultsStream(QStringLiteral("AlpineApkStream"), { result });
++}
++
++AbstractBackendUpdater *AlpineApkBackend::backendUpdater() const
++{
++    return m_updater;
++}
++
++AbstractReviewsBackend *AlpineApkBackend::reviewsBackend() const
++{
++    return m_reviews;
++}
++
++Transaction* AlpineApkBackend::installApplication(AbstractResource *app, const AddonList &addons)
++{
++    return new AlpineApkTransaction(qobject_cast<AlpineApkResource *>(app), addons, Transaction::InstallRole);
++}
++
++Transaction* AlpineApkBackend::installApplication(AbstractResource *app)
++{
++    return new AlpineApkTransaction(qobject_cast<AlpineApkResource *>(app), Transaction::InstallRole);
++}
++
++Transaction* AlpineApkBackend::removeApplication(AbstractResource *app)
++{
++    return new AlpineApkTransaction(qobject_cast<AlpineApkResource *>(app), Transaction::RemoveRole);
++}
++
++void AlpineApkBackend::checkForUpdates()
++{
++    if (m_fetching) {
++        qCDebug(LOG_ALPINEAPK) << "checkForUpdates(): already fetching";
++        return;
++    }
++    startCheckForUpdates();
++}
++
++QString AlpineApkBackend::displayName() const
++{
++    return QStringLiteral("Alpine APK backend");
++}
++
++bool AlpineApkBackend::hasApplications() const
++{
++    return true;
++}
++
++#include "AlpineApkBackend.moc"
+diff --git a/libdiscover/backends/AlpineApkBackend/AlpineApkBackend.h b/libdiscover/backends/AlpineApkBackend/AlpineApkBackend.h
+new file mode 100644
+index 00000000..a533cee3
+--- /dev/null
++++ b/libdiscover/backends/AlpineApkBackend/AlpineApkBackend.h
+@@ -0,0 +1,77 @@
++/***************************************************************************
++ *   Copyright © 2020 Alexey Min <alexey.min@gmail.com>                    *
++ *                                                                         *
++ *   This program is free software; you can redistribute it and/or         *
++ *   modify it under the terms of the GNU General Public License as        *
++ *   published by the Free Software Foundation; either version 2 of        *
++ *   the License or (at your option) version 3 or any later version        *
++ *   accepted by the membership of KDE e.V. (or its successor approved     *
++ *   by the membership of KDE e.V.), which shall act as a proxy            *
++ *   defined in Section 14 of version 3 of the license.                    *
++ *                                                                         *
++ *   This program is distributed in the hope that it will be useful,       *
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
++ *   GNU General Public License for more details.                          *
++ *                                                                         *
++ *   You should have received a copy of the GNU General Public License     *
++ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
++ ***************************************************************************/
++
++#ifndef AlpineApkBackend_H
++#define AlpineApkBackend_H
++
++#include <resources/AbstractResourcesBackend.h>
++#include <QVariantList>
++
++#include <QtApk.h>
++
++class AlpineApkReviewsBackend;
++class StandardBackendUpdater;
++class AlpineApkResource;
++class KJob;
++
++class AlpineApkBackend : public AbstractResourcesBackend
++{
++    Q_OBJECT
++    Q_PROPERTY(int startElements MEMBER m_startElements)
++
++public:
++    explicit AlpineApkBackend(QObject *parent = nullptr);
++
++    QVector<Category *> category() const override;
++    int updatesCount() const override;
++    AbstractBackendUpdater *backendUpdater() const override;
++    AbstractReviewsBackend *reviewsBackend() const override;
++    ResultsStream *search(const AbstractResourcesBackend::Filters &filter) override;
++    ResultsStream *findResourceByPackageName(const QUrl &search);
++    QHash<QString, AlpineApkResource *> resources() const { return m_resources; }
++    bool isValid() const override { return true; } // No external file dependencies that could cause runtime errors
++
++    Transaction *installApplication(AbstractResource *app) override;
++    Transaction *installApplication(AbstractResource *app, const AddonList &addons) override;
++    Transaction *removeApplication(AbstractResource *app) override;
++    bool isFetching() const override { return m_fetching; }
++    void checkForUpdates() override;
++    QString displayName() const override;
++    bool hasApplications() const override;
++
++public Q_SLOTS:
++    void handleKauthHelperReply(KJob *job);
++    void startCheckForUpdates();
++    void finishCheckForUpdates();
++
++private:
++    void populate();
++
++    QHash<QString, AlpineApkResource *> m_resources;
++    StandardBackendUpdater *m_updater;
++    AlpineApkReviewsBackend *m_reviews;
++    QtApk::Database m_apkdb;
++    QVector<QtApk::Package> m_availablePackages;
++    QVector<QtApk::Package> m_installedPackages;
++    bool m_fetching = false;
++    int m_startElements = 0;
++};
++
++#endif // AlpineApkBackend_H
+diff --git a/libdiscover/backends/AlpineApkBackend/AlpineApkResource.cpp b/libdiscover/backends/AlpineApkBackend/AlpineApkResource.cpp
+new file mode 100644
+index 00000000..d827e7b3
+--- /dev/null
++++ b/libdiscover/backends/AlpineApkBackend/AlpineApkResource.cpp
+@@ -0,0 +1,208 @@
++/***************************************************************************
++ *   Copyright © 2020 Alexey Min <alexey.min@gmail.com>                    *
++ *                                                                         *
++ *   This program is free software; you can redistribute it and/or         *
++ *   modify it under the terms of the GNU General Public License as        *
++ *   published by the Free Software Foundation; either version 2 of        *
++ *   the License or (at your option) version 3 or any later version        *
++ *   accepted by the membership of KDE e.V. (or its successor approved     *
++ *   by the membership of KDE e.V.), which shall act as a proxy            *
++ *   defined in Section 14 of version 3 of the license.                    *
++ *                                                                         *
++ *   This program is distributed in the hope that it will be useful,       *
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
++ *   GNU General Public License for more details.                          *
++ *                                                                         *
++ *   You should have received a copy of the GNU General Public License     *
++ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
++ ***************************************************************************/
++
++#include <KRandom>
++#include "AlpineApkResource.h"
++#include "alpineapk_backend_logging.h"  // generated by ECM
++#include "Transaction/AddonList.h"
++
++AlpineApkResource::AlpineApkResource(const QtApk::Package &apkPkg,
++                                     AbstractResourcesBackend *parent)
++    : AbstractResource(parent)
++    , m_state(AbstractResource::State::None)
++    , m_type(Application)
++    , m_pkg(apkPkg)
++{
++}
++
++QList<PackageState> AlpineApkResource::addonsInformation()
++{
++    return m_addons;
++}
++
++QString AlpineApkResource::availableVersion() const
++{
++    return m_pkg.version;
++}
++
++QStringList AlpineApkResource::categories()
++{
++    return { m_category };
++}
++
++QString AlpineApkResource::comment()
++{
++    return m_pkg.description;
++}
++
++int AlpineApkResource::size()
++{
++    return static_cast<int>(m_pkg.size);
++}
++
++QUrl AlpineApkResource::homepage()
++{
++    return QUrl::fromUserInput(m_pkg.url);
++}
++
++QUrl AlpineApkResource::helpURL()
++{
++    return QUrl();
++}
++
++QUrl AlpineApkResource::bugURL()
++{
++    return QUrl();
++}
++
++QUrl AlpineApkResource::donationURL()
++{
++    return QUrl();
++}
++
++QVariant AlpineApkResource::icon() const
++{
++    return QStringLiteral("package-x-generic");
++}
++
++QString AlpineApkResource::installedVersion() const
++{
++    return m_pkg.version;
++}
++
++QJsonArray AlpineApkResource::licenses()
++{
++    return {
++        QJsonObject {
++            { QStringLiteral("name"), m_pkg.license },
++            { QStringLiteral("url"), QStringLiteral("https://spdx.org/license-list") },
++        }
++    };
++}
++
++QString AlpineApkResource::longDescription()
++{
++    return m_pkg.description;
++}
++
++QString AlpineApkResource::name() const
++{
++    return m_pkg.name;
++}
++
++QString AlpineApkResource::origin() const
++{
++    return m_originSoruce;
++}
++
++QString AlpineApkResource::packageName() const
++{
++    return m_pkg.name;
++}
++
++QString AlpineApkResource::section()
++{
++    return m_sectionName;
++}
++
++AbstractResource::State AlpineApkResource::state()
++{
++    return m_state;
++}
++
++void AlpineApkResource::fetchChangelog()
++{
++    // QString log = longDescription();
++    // Q_EMIT changelogFetched(log);
++}
++
++void AlpineApkResource::fetchScreenshots()
++{
++    // Q_EMIT screenshotsFetched(m_screenshotThumbnails, m_screenshots);
++}
++
++void AlpineApkResource::setState(AbstractResource::State state)
++{
++    m_state = state;
++    emit stateChanged();
++}
++
++void AlpineApkResource::setCategoryName(const QString &categoryName)
++{
++    m_category = categoryName;
++}
++
++void AlpineApkResource::setOriginSource(const QString &originSource)
++{
++    m_originSoruce = originSource;
++}
++
++void AlpineApkResource::setSection(const QString &sectionName)
++{
++    m_sectionName = sectionName;
++}
++
++void AlpineApkResource::setAddons(const AddonList &addons)
++{
++    const QStringList addonsToInstall = addons.addonsToInstall();
++    for (const QString &toInstall : addonsToInstall) {
++        setAddonInstalled(toInstall, true);
++    }
++    const QStringList addonsToRemove = addons.addonsToRemove();
++    for (const QString &toRemove : addonsToRemove) {
++        setAddonInstalled(toRemove, false);
++    }
++}
++
++void AlpineApkResource::setAddonInstalled(const QString &addon, bool installed)
++{
++    for(PackageState &elem : m_addons) {
++        if(elem.name() == addon) {
++            elem.setInstalled(installed);
++        }
++    }
++}
++
++
++void AlpineApkResource::invokeApplication() const
++{
++    // QDesktopServices d;
++    // d.openUrl(QUrl(QStringLiteral("https://projects.kde.org/projects/extragear/sysadmin/muon")));
++}
++
++QUrl AlpineApkResource::url() const
++{
++    return QUrl(QLatin1String("apk://") + packageName());
++}
++
++QString AlpineApkResource::author() const
++{
++    return m_pkg.maintainer;
++}
++
++QString AlpineApkResource::sourceIcon() const
++{
++    return QStringLiteral("player-time");
++}
++
++QDate AlpineApkResource::releaseDate() const
++{
++    return m_pkg.buildTime.date();
++}
+diff --git a/libdiscover/backends/AlpineApkBackend/AlpineApkResource.h b/libdiscover/backends/AlpineApkBackend/AlpineApkResource.h
+new file mode 100644
+index 00000000..79b100e1
+--- /dev/null
++++ b/libdiscover/backends/AlpineApkBackend/AlpineApkResource.h
+@@ -0,0 +1,81 @@
++/***************************************************************************
++ *   Copyright © 2020 Alexey Min <alexey.min@gmail.com>                    *
++ *                                                                         *
++ *   This program is free software; you can redistribute it and/or         *
++ *   modify it under the terms of the GNU General Public License as        *
++ *   published by the Free Software Foundation; either version 2 of        *
++ *   the License or (at your option) version 3 or any later version        *
++ *   accepted by the membership of KDE e.V. (or its successor approved     *
++ *   by the membership of KDE e.V.), which shall act as a proxy            *
++ *   defined in Section 14 of version 3 of the license.                    *
++ *                                                                         *
++ *   This program is distributed in the hope that it will be useful,       *
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
++ *   GNU General Public License for more details.                          *
++ *                                                                         *
++ *   You should have received a copy of the GNU General Public License     *
++ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
++ ***************************************************************************/
++
++#ifndef ALPINEAPKRESOURCE_H
++#define ALPINEAPKRESOURCE_H
++
++#include <resources/AbstractResource.h>
++#include <QtApkPackage.h>
++
++class AddonList;
++
++class AlpineApkResource : public AbstractResource
++{
++    Q_OBJECT
++
++public:
++    explicit AlpineApkResource(const QtApk::Package &apkPkg, AbstractResourcesBackend *parent);
++
++    QList<PackageState> addonsInformation() override;
++    QString section() override;
++    QString origin() const override;
++    QString longDescription() override;
++    QString availableVersion() const override;
++    QString installedVersion() const override;
++    QJsonArray licenses() override;
++    int size() override;
++    QUrl homepage() override;
++    QUrl helpURL() override;
++    QUrl bugURL() override;
++    QUrl donationURL() override;
++    QStringList categories() override;
++    AbstractResource::State state() override;
++    QVariant icon() const override;
++    QString comment() override;
++    QString name() const override;
++    QString packageName() const override;
++    AbstractResource::Type type() const override { return m_type; }
++    bool canExecute() const override { return true; }
++    void invokeApplication() const override;
++    void fetchChangelog() override;
++    void fetchScreenshots() override;
++    QUrl url() const override;
++    QString author() const override;
++    QString sourceIcon() const override;
++    QDate releaseDate() const override;
++
++    void setState(State state);
++    void setCategoryName(const QString &categoryName);
++    void setOriginSource(const QString &originSource);
++    void setSection(const QString &sectionName);
++    void setAddons(const AddonList &addons);
++    void setAddonInstalled(const QString &addon, bool installed);
++
++public:
++    AbstractResource::State m_state;
++    const AbstractResource::Type m_type;
++    QtApk::Package m_pkg;
++    QString m_category;
++    QString m_originSoruce;
++    QString m_sectionName;
++    QList<PackageState> m_addons;
++};
++
++#endif // ALPINEAPKRESOURCE_H
+diff --git a/libdiscover/backends/AlpineApkBackend/AlpineApkReviewsBackend.cpp b/libdiscover/backends/AlpineApkBackend/AlpineApkReviewsBackend.cpp
+new file mode 100644
+index 00000000..fd7ad47f
+--- /dev/null
++++ b/libdiscover/backends/AlpineApkBackend/AlpineApkReviewsBackend.cpp
+@@ -0,0 +1,35 @@
++/***************************************************************************
++ *   Copyright © 2020 Alexey Min <alexey.min@gmail.com>                    *
++ *                                                                         *
++ *   This program is free software; you can redistribute it and/or         *
++ *   modify it under the terms of the GNU General Public License as        *
++ *   published by the Free Software Foundation; either version 2 of        *
++ *   the License or (at your option) version 3 or any later version        *
++ *   accepted by the membership of KDE e.V. (or its successor approved     *
++ *   by the membership of KDE e.V.), which shall act as a proxy            *
++ *   defined in Section 14 of version 3 of the license.                    *
++ *                                                                         *
++ *   This program is distributed in the hope that it will be useful,       *
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
++ *   GNU General Public License for more details.                          *
++ *                                                                         *
++ *   You should have received a copy of the GNU General Public License     *
++ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
++ ***************************************************************************/
++
++#include "AlpineApkReviewsBackend.h"
++#include "AlpineApkBackend.h"
++#include "resources/AbstractResource.h"
++
++AlpineApkReviewsBackend::AlpineApkReviewsBackend(AlpineApkBackend *parent)
++    : AbstractReviewsBackend(parent)
++{
++}
++
++void AlpineApkReviewsBackend::fetchReviews(AbstractResource *app, int page)
++{
++    Q_UNUSED(page)
++    static const QVector<ReviewPtr> reviews;
++    Q_EMIT reviewsReady(app, reviews, false);
++}
+diff --git a/libdiscover/backends/AlpineApkBackend/AlpineApkReviewsBackend.h b/libdiscover/backends/AlpineApkBackend/AlpineApkReviewsBackend.h
+new file mode 100644
+index 00000000..435f845b
+--- /dev/null
++++ b/libdiscover/backends/AlpineApkBackend/AlpineApkReviewsBackend.h
+@@ -0,0 +1,52 @@
++/***************************************************************************
++ *   Copyright © 2020 Alexey Min <alexey.min@gmail.com>                    *
++ *                                                                         *
++ *   This program is free software; you can redistribute it and/or         *
++ *   modify it under the terms of the GNU General Public License as        *
++ *   published by the Free Software Foundation; either version 2 of        *
++ *   the License or (at your option) version 3 or any later version        *
++ *   accepted by the membership of KDE e.V. (or its successor approved     *
++ *   by the membership of KDE e.V.), which shall act as a proxy            *
++ *   defined in Section 14 of version 3 of the license.                    *
++ *                                                                         *
++ *   This program is distributed in the hope that it will be useful,       *
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
++ *   GNU General Public License for more details.                          *
++ *                                                                         *
++ *   You should have received a copy of the GNU General Public License     *
++ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
++ ***************************************************************************/
++
++#ifndef ALPINEAPKREVIEWSBACKEND_H
++#define ALPINEAPKREVIEWSBACKEND_H
++
++#include "ReviewsBackend/AbstractReviewsBackend.h"
++
++class AlpineApkBackend;
++
++class AlpineApkReviewsBackend : public AbstractReviewsBackend
++{
++    Q_OBJECT
++
++public:
++    explicit AlpineApkReviewsBackend(AlpineApkBackend *parent = nullptr);
++
++    QString userName() const override { return QStringLiteral("dummy"); }
++    void login() override {}
++    void logout() override {}
++    void registerAndLogin() override {}
++
++    Rating *ratingForApplication(AbstractResource *) const override { return nullptr; }
++    bool hasCredentials() const override { return false; }
++    void deleteReview(Review *) override {}
++    void fetchReviews(AbstractResource *app, int page = 1) override;
++    bool isFetching() const override { return false; }
++    bool isReviewable() const override { return false; }
++    void submitReview(AbstractResource *, const QString &, const QString &, const QString &) override {}
++    void flagReview(Review *, const QString&, const QString&) override {}
++    void submitUsefulness(Review *, bool) override {}
++    bool isResourceSupported(AbstractResource *) const override { return false; }
++};
++
++#endif // ALPINEAPKREVIEWSBACKEND_H
+diff --git a/libdiscover/backends/AlpineApkBackend/AlpineApkSourcesBackend.cpp b/libdiscover/backends/AlpineApkBackend/AlpineApkSourcesBackend.cpp
+new file mode 100644
+index 00000000..09a86bdf
+--- /dev/null
++++ b/libdiscover/backends/AlpineApkBackend/AlpineApkSourcesBackend.cpp
+@@ -0,0 +1,147 @@
++/***************************************************************************
++ *   Copyright © 2020 Alexey Min <alexey.min@gmail.com>                    *
++ *                                                                         *
++ *   This program is free software; you can redistribute it and/or         *
++ *   modify it under the terms of the GNU General Public License as        *
++ *   published by the Free Software Foundation; either version 2 of        *
++ *   the License or (at your option) version 3 or any later version        *
++ *   accepted by the membership of KDE e.V. (or its successor approved     *
++ *   by the membership of KDE e.V.), which shall act as a proxy            *
++ *   defined in Section 14 of version 3 of the license.                    *
++ *                                                                         *
++ *   This program is distributed in the hope that it will be useful,       *
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
++ *   GNU General Public License for more details.                          *
++ *                                                                         *
++ *   You should have received a copy of the GNU General Public License     *
++ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
++ ***************************************************************************/
++
++#include "AlpineApkSourcesBackend.h"
++#include "alpineapk_backend_logging.h"  // generated by ECM
++#include <QDebug>
++#include <QAction>
++#include <QVector>
++
++// libapk-qt
++#include <QtApk.h>
++
++AlpineApkSourcesBackend::AlpineApkSourcesBackend(AbstractResourcesBackend *parent)
++    : AbstractSourcesBackend(parent)
++    , m_sourcesModel(new QStandardItemModel(this))
++    , m_refreshAction(new QAction(QIcon::fromTheme(QStringLiteral("view-refresh")),
++                                  QStringLiteral("Refresh"), this))
++{
++    loadSources();
++    QObject::connect(m_refreshAction, &QAction::triggered,
++                     this, &AlpineApkSourcesBackend::loadSources);
++
++    // can be used to track enabling/disabling repo source
++    // QObject::connect(m_sourcesModel, &QStandardItemModel::itemChanged, this, [](QStandardItem* item) {
++    //     qCDebug(LOG_ALPINEAPK) << "DummySource changed" << item << item->checkState();
++    // });
++}
++
++QAbstractItemModel *AlpineApkSourcesBackend::sources()
++{
++    return m_sourcesModel;
++}
++
++bool AlpineApkSourcesBackend::addSource(const QString &id)
++{
++    return addSourceFull(id, QString(), true);
++}
++
++QStandardItem *AlpineApkSourcesBackend::sourceForId(const QString& id) const
++{
++    for (int i = 0, c = m_sourcesModel->rowCount(); i < c; ++i) {
++        QStandardItem *it = m_sourcesModel->item(i, 0);
++        if (it->text() == id) {
++            return it;
++        }
++    }
++    return nullptr;
++}
++
++bool AlpineApkSourcesBackend::addSourceFull(const QString &id, const QString &comment, bool enabled)
++{
++    if (id.isEmpty()) {
++        return false;
++    }
++
++    qCDebug(LOG_ALPINEAPK) << "AlpineApkSourcesBackend: Adding source:" << id;
++
++    QStandardItem *it = new QStandardItem(id);
++    it->setData(id, AbstractSourcesBackend::IdRole);
++    it->setData(comment, Qt::ToolTipRole);
++    it->setCheckable(true);
++    it->setCheckState(enabled ? Qt::Checked : Qt::Unchecked);
++    // for now, disable editing sources
++    it->setFlags(it->flags() & ~Qt::ItemIsEnabled);
++    m_sourcesModel->appendRow(it);
++    return true;
++}
++
++void AlpineApkSourcesBackend::loadSources()
++{
++    QVector<QtApk::Repository> repos = QtApk::Database::getRepositories();
++    m_sourcesModel->clear();
++    for (const QtApk::Repository &repo: repos) {
++        addSourceFull(repo.url, repo.comment, repo.enabled);
++    }
++}
++
++bool AlpineApkSourcesBackend::removeSource(const QString &id)
++{
++    const QStandardItem *it = sourceForId(id);
++    if (!it) {
++        qCWarning(LOG_ALPINEAPK) << "AlpineApkSourcesBackend: couldn't find " << id;
++        return false;
++    }
++    return m_sourcesModel->removeRow(it->row());
++}
++
++QString AlpineApkSourcesBackend::idDescription()
++{
++    return QStringLiteral("Enter apk repository URL, for example: "
++                          "http://dl-cdn.alpinelinux.org/alpine/edge/testing/");
++}
++
++QVariantList AlpineApkSourcesBackend::actions() const
++{
++    static const QVariantList s_actions {
++        QVariant::fromValue<QObject *>(m_refreshAction),
++    };
++    return s_actions;
++}
++
++bool AlpineApkSourcesBackend::supportsAdding() const
++{
++    return false; // for now, disable editing sources
++}
++
++bool AlpineApkSourcesBackend::canMoveSources() const
++{
++    return false; // for now, disable editing sources
++}
++
++bool AlpineApkSourcesBackend::moveSource(const QString& sourceId, int delta)
++{
++    int row = sourceForId(sourceId)->row();
++    QList<QStandardItem *> prevRow = m_sourcesModel->takeRow(row);
++    if (prevRow.isEmpty()) {
++        return false;
++    }
++
++    const int destRow = row + delta;
++    m_sourcesModel->insertRow(destRow, prevRow);
++    if (destRow == 0 || row == 0) {
++        Q_EMIT firstSourceIdChanged();
++    }
++    if (destRow == (m_sourcesModel->rowCount() - 1)
++            || row == (m_sourcesModel->rowCount() - 1)) {
++        Q_EMIT lastSourceIdChanged();
++    }
++    return true;
++}
+diff --git a/libdiscover/backends/AlpineApkBackend/AlpineApkSourcesBackend.h b/libdiscover/backends/AlpineApkBackend/AlpineApkSourcesBackend.h
+new file mode 100644
+index 00000000..57894591
+--- /dev/null
++++ b/libdiscover/backends/AlpineApkBackend/AlpineApkSourcesBackend.h
+@@ -0,0 +1,50 @@
++/***************************************************************************
++ *   Copyright © 2020 Alexey Min <alexey.min@gmail.com>                    *
++ *                                                                         *
++ *   This program is free software; you can redistribute it and/or         *
++ *   modify it under the terms of the GNU General Public License as        *
++ *   published by the Free Software Foundation; either version 2 of        *
++ *   the License or (at your option) version 3 or any later version        *
++ *   accepted by the membership of KDE e.V. (or its successor approved     *
++ *   by the membership of KDE e.V.), which shall act as a proxy            *
++ *   defined in Section 14 of version 3 of the license.                    *
++ *                                                                         *
++ *   This program is distributed in the hope that it will be useful,       *
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
++ *   GNU General Public License for more details.                          *
++ *                                                                         *
++ *   You should have received a copy of the GNU General Public License     *
++ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
++ ***************************************************************************/
++
++#ifndef ALPINEAPKSOURCESBACKEND_H
++#define ALPINEAPKSOURCESBACKEND_H
++
++#include <resources/AbstractSourcesBackend.h>
++#include <QStandardItemModel>
++
++class AlpineApkSourcesBackend : public AbstractSourcesBackend
++{
++public:
++    explicit AlpineApkSourcesBackend(AbstractResourcesBackend *parent);
++
++    QAbstractItemModel *sources() override;
++    bool addSource(const QString &id) override;
++    bool removeSource(const QString &id) override;
++    QString idDescription() override;
++    QVariantList actions() const override;
++    bool supportsAdding() const override;
++    bool canMoveSources() const override;
++    bool moveSource(const QString &sourceId, int delta) override;
++
++private:
++    QStandardItem *sourceForId(const QString &id) const;
++    bool addSourceFull(const QString &id, const QString &comment, bool enabled);
++    void loadSources();
++
++    QStandardItemModel *m_sourcesModel = nullptr;
++    QAction *m_refreshAction = nullptr;
++};
++
++#endif // ALPINEAPKSOURCESBACKEND_H
+diff --git a/libdiscover/backends/AlpineApkBackend/AlpineApkTransaction.cpp b/libdiscover/backends/AlpineApkBackend/AlpineApkTransaction.cpp
+new file mode 100644
+index 00000000..b4f90df5
+--- /dev/null
++++ b/libdiscover/backends/AlpineApkBackend/AlpineApkTransaction.cpp
+@@ -0,0 +1,90 @@
++/***************************************************************************
++ *   Copyright © 2020 Alexey Min <alexey.min@gmail.com>                    *
++ *                                                                         *
++ *   This program is free software; you can redistribute it and/or         *
++ *   modify it under the terms of the GNU General Public License as        *
++ *   published by the Free Software Foundation; either version 2 of        *
++ *   the License or (at your option) version 3 or any later version        *
++ *   accepted by the membership of KDE e.V. (or its successor approved     *
++ *   by the membership of KDE e.V.), which shall act as a proxy            *
++ *   defined in Section 14 of version 3 of the license.                    *
++ *                                                                         *
++ *   This program is distributed in the hope that it will be useful,       *
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
++ *   GNU General Public License for more details.                          *
++ *                                                                         *
++ *   You should have received a copy of the GNU General Public License     *
++ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
++ ***************************************************************************/
++
++#include "AlpineApkTransaction.h"
++#include "AlpineApkBackend.h"
++#include "AlpineApkResource.h"
++#include "alpineapk_backend_logging.h"  // generated by ECM
++#include <QTimer>
++#include <QDebug>
++#include <KRandom>
++
++// #define TEST_PROCEED
++
++AlpineApkTransaction::AlpineApkTransaction(AlpineApkResource *app, Role role)
++    : AlpineApkTransaction(app, {}, role)
++{
++}
++
++AlpineApkTransaction::AlpineApkTransaction(AlpineApkResource *app, const AddonList &addons, Transaction::Role role)
++    : Transaction(app->backend(), app, role, addons)
++    , m_app(app)
++{
++    setCancellable(true);
++    setStatus(DownloadingStatus);
++    iterateTransaction();
++}
++
++void AlpineApkTransaction::iterateTransaction()
++{
++    if (!m_iterate) {
++        return;
++    }
++
++    if(progress() < 100) {
++        setProgress(qBound(0, progress() + (KRandom::random() % 30), 100));
++        QTimer::singleShot(/*KRandom::random()%*/100, this, &AlpineApkTransaction::iterateTransaction);
++    } else if (status() == DownloadingStatus) {
++        setStatus(CommittingStatus);
++        QTimer::singleShot(/*KRandom::random()%*/100, this, &AlpineApkTransaction::iterateTransaction);
++    } else {
++        finishTransaction();
++    }
++}
++
++void AlpineApkTransaction::proceed()
++{
++    finishTransaction();
++}
++
++void AlpineApkTransaction::cancel()
++{
++    m_iterate = false;
++
++    setStatus(CancelledStatus);
++}
++
++void AlpineApkTransaction::finishTransaction()
++{
++    AbstractResource::State newState;
++    switch(role()) {
++    case InstallRole:
++    case ChangeAddonsRole:
++        newState = AbstractResource::Installed;
++        break;
++    case RemoveRole:
++        newState = AbstractResource::None;
++        break;
++    }
++    m_app->setAddons(addons());
++    m_app->setState(newState);
++    setStatus(DoneStatus);
++    deleteLater();
++}
+diff --git a/libdiscover/backends/AlpineApkBackend/AlpineApkTransaction.h b/libdiscover/backends/AlpineApkBackend/AlpineApkTransaction.h
+new file mode 100644
+index 00000000..63aeef8d
+--- /dev/null
++++ b/libdiscover/backends/AlpineApkBackend/AlpineApkTransaction.h
+@@ -0,0 +1,46 @@
++/***************************************************************************
++ *   Copyright © 2020 Alexey Min <alexey.min@gmail.com>                    *
++ *                                                                         *
++ *   This program is free software; you can redistribute it and/or         *
++ *   modify it under the terms of the GNU General Public License as        *
++ *   published by the Free Software Foundation; either version 2 of        *
++ *   the License or (at your option) version 3 or any later version        *
++ *   accepted by the membership of KDE e.V. (or its successor approved     *
++ *   by the membership of KDE e.V.), which shall act as a proxy            *
++ *   defined in Section 14 of version 3 of the license.                    *
++ *                                                                         *
++ *   This program is distributed in the hope that it will be useful,       *
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
++ *   GNU General Public License for more details.                          *
++ *                                                                         *
++ *   You should have received a copy of the GNU General Public License     *
++ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
++ ***************************************************************************/
++
++#ifndef ALPINEAPKTRANSACTION_H
++#define ALPINEAPKTRANSACTION_H
++
++#include <Transaction/Transaction.h>
++
++class AlpineApkResource;
++class AlpineApkTransaction : public Transaction
++{
++    Q_OBJECT
++    public:
++        AlpineApkTransaction(AlpineApkResource *app, Role role);
++        AlpineApkTransaction(AlpineApkResource *app, const AddonList &list, Role role);
++
++        void cancel() override;
++        void proceed() override;
++
++    private Q_SLOTS:
++        void iterateTransaction();
++        void finishTransaction();
++
++    private:
++        bool m_iterate = true;
++        AlpineApkResource *m_app;
++};
++
++#endif // ALPINEAPKTRANSACTION_H
+diff --git a/libdiscover/backends/AlpineApkBackend/CMakeLists.txt b/libdiscover/backends/AlpineApkBackend/CMakeLists.txt
+new file mode 100644
+index 00000000..ede3157f
+--- /dev/null
++++ b/libdiscover/backends/AlpineApkBackend/CMakeLists.txt
+@@ -0,0 +1,77 @@
++find_package(KF5Auth CONFIG REQUIRED)  # Probably should be moved to top CMakeLists
++
++set(alpineapkbackend_SRCS
++    AlpineApkBackend.cpp
++    AlpineApkBackend.h
++    AlpineApkResource.cpp
++    AlpineApkResource.h
++    AlpineApkReviewsBackend.cpp
++    AlpineApkReviewsBackend.h
++    AlpineApkSourcesBackend.cpp
++    AlpineApkSourcesBackend.h
++    AlpineApkTransaction.cpp
++    AlpineApkTransaction.h
++)
++
++ecm_qt_declare_logging_category(
++    alpineapkbackend_SRCS  # sources_var
++    HEADER alpineapk_backend_logging.h
++    IDENTIFIER LOG_ALPINEAPK
++    CATEGORY_NAME org.kde.plasma.discover.alpineapk
++    DEFAULT_SEVERITY Debug
++)
++
++add_library(
++    alpineapk-backend
++    MODULE
++        ${alpineapkbackend_SRCS}
++)
++
++target_link_libraries(
++    alpineapk-backend
++    PRIVATE
++        Qt5::Core
++        Qt5::Widgets
++        KF5::CoreAddons
++        KF5::ConfigCore
++        KF5::AuthCore
++        Discover::Common
++        apk-qt
++)
++
++# KAuth helper exe
++add_executable(alpineapk_kauth_helper
++    AlpineApkAuthHelper.cpp
++    AlpineApkAuthHelper.h
++    org.kde.discover.alpineapkbackend.actions
++)
++set_source_files_properties(
++    org.kde.discover.alpineapkbackend.actions
++    PROPERTIES HEADER_FILE_ONLY ON
++)
++target_link_libraries(alpineapk_kauth_helper
++    Qt5::Core
++    KF5::AuthCore
++    apk-qt
++)
++
++kauth_install_actions(org.kde.discover.alpineapkbackend org.kde.discover.alpineapkbackend.actions)
++kauth_install_helper_files(alpineapk_kauth_helper org.kde.discover.alpineapkbackend root)
++
++install(
++    TARGETS alpineapk-backend
++    DESTINATION ${PLUGIN_INSTALL_DIR}/discover
++)
++
++install(
++    TARGETS alpineapk_kauth_helper
++    DESTINATION ${KAUTH_HELPER_INSTALL_DIR}
++)
++
++# add_library(AlpineApkNotifier MODULE AlpineApkNotifier.cpp)
++
++# target_link_libraries(AlpineApkNotifier Discover::Notifiers)
++
++# set_target_properties(AlpineApkNotifier PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}/plasma-discover)
++
++# install(TARGETS AlpineApkNotifier DESTINATION ${PLUGIN_INSTALL_DIR}/discover-notifier)
+diff --git a/libdiscover/backends/AlpineApkBackend/org.kde.discover.alpineapkbackend.actions b/libdiscover/backends/AlpineApkBackend/org.kde.discover.alpineapkbackend.actions
+new file mode 100644
+index 00000000..3b9a3116
+--- /dev/null
++++ b/libdiscover/backends/AlpineApkBackend/org.kde.discover.alpineapkbackend.actions
+@@ -0,0 +1,5 @@
++[org.kde.discover.alpineapkbackend.test]
++Name=Test Action
++Description=Just test
++Policy=auth_admin
++Persistence=session
+diff --git a/libdiscover/backends/CMakeLists.txt b/libdiscover/backends/CMakeLists.txt
+index 5f87f639..18947339 100644
+--- a/libdiscover/backends/CMakeLists.txt
++++ b/libdiscover/backends/CMakeLists.txt
+@@ -45,4 +45,14 @@ if(BUILD_FwupdBackend AND TARGET PkgConfig::Fwupd)
+     add_subdirectory(FwupdBackend)
+ endif()
+ 
++find_package(ApkQt CONFIG)
++set_package_properties(ApkQt PROPERTIES
++    DESCRIPTION "C++/Qt interface library for Alpine package keeper"
++    URL "https://www.alpinelinux.org"
++    PURPOSE "Required to build the Alpine APK backend"
++    TYPE OPTIONAL)
+ 
++option(BUILD_AlpineApkBackend "Build Alpine APK support." "ON")
++if(BUILD_AlpineApkBackend AND ApkQt_FOUND)
++    add_subdirectory(AlpineApkBackend)
++endif()

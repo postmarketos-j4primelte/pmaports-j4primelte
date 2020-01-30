@@ -1,0 +1,125 @@
+# Forked from Alpine INSERT-REASON-HERE (CHANGEME!)
+
+pkgname=discover
+pkgver=9999
+_pkgver=5.17.5
+pkgrel=0
+arch="all !armhf" # armhf blocked by qt5-qtdeclarative
+url="https://userbase.kde.org/Discover"
+pkgdesc="KDE Plasma resources management GUI"
+license="LGPL-2.0-or-later AND (GPL-2.0-only OR GPL-3.0-only) AND GFDL-1.2-only"
+depends="kirigami2 libapk-qt"
+makedepends="extra-cmake-modules qt5-qtbase-dev qt5-qtdeclarative-dev kcoreaddons-dev kconfig-dev kcrash-dev kdbusaddons-dev ki18n-dev karchive-dev kxmlgui-dev kitemmodels-dev kio-dev kdeclarative-dev attica-dev knewstuff-dev plasma-framework-dev appstream-dev flatpak-dev libapk-qt-dev"
+options="!check" # disable for temp pkg
+_commit="53542f79b17828b14c49a27e8a30d27d9dc757ec"
+source="
+	$pkgname-$_commit.tar.gz::https://cgit.kde.org/discover.git/snapshot/$_commit.tar.gz
+	apk-backend.patch
+"
+subpackages="
+	$pkgname-backend-flatpak:backend_flatpak
+	$pkgname-backend-alpineapk:backend_alpineapk
+"
+
+builddir="$srcdir/$_commit"
+
+case "$CARCH" in
+	x86|x86_64)
+		makedepends="$makedepends fwupd-dev"
+		subpackages="$subpackages $pkgname-backend-fwupd:backend_fwupd"
+		;;
+	*) ;;
+esac
+
+prepare() {
+	default_prepare
+
+	mkdir "$builddir"/build
+}
+
+build() {
+	cd "$builddir"/build
+	cmake "$builddir" \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DCMAKE_DISABLE_FIND_PACKAGE_Snapd=ON
+	make
+}
+
+package() {
+	cd "$builddir"/build
+	DESTDIR="$pkgdir" make install
+}
+
+backend_flatpak() {
+	pkgdesc="Flatpak backend for $pkgname"
+	depends=""
+	install_if="$pkgname flatpak"
+
+	mkdir -p \
+		"$subpkgdir"/usr/lib/qt5/plugins/discover \
+		"$subpkgdir"/usr/share/libdiscover/categories \
+		"$subpkgdir"/usr/lib/qt5/plugins/discover-notifier \
+		"$subpkgdir"/usr/share/applications \
+		"$subpkgdir"/usr/share/metainfo \
+		"$subpkgdir"/usr/share/icons/hicolor/scalable/apps
+
+	mv "$pkgdir"/usr/lib/qt5/plugins/discover/flatpak-backend.so \
+		"$subpkgdir"/usr/lib/qt5/plugins/discover/
+	mv "$pkgdir"/usr/share/libdiscover/categories/flatpak-backend-categories.xml \
+		"$subpkgdir"/usr/share/libdiscover/categories/
+	mv "$pkgdir"/usr/lib/qt5/plugins/discover-notifier/FlatpakNotifier.so \
+		"$subpkgdir"/usr/lib/qt5/plugins/discover-notifier/
+	mv "$pkgdir"/usr/share/applications/org.kde.discover-flatpak.desktop \
+		"$subpkgdir"/usr/share/applications/
+	mv "$pkgdir"/usr/share/metainfo/org.kde.discover.flatpak.appdata.xml \
+		"$subpkgdir"/usr/share/metainfo/
+	mv "$pkgdir"/usr/share/icons/hicolor/scalable/apps/flatpak-discover.svg \
+		"$subpkgdir"/usr/share/icons/hicolor/scalable/apps/
+}
+
+backend_alpineapk() {
+	pkgdesc="Alpine APK backend for $pkgname"
+	depends=""
+
+	mkdir -p \
+		"$subpkgdir"/usr/lib/qt5/plugins/discover \
+		"$subpkgdir"/usr/lib/qt5/plugins/discover-notifier \
+		"$subpkgdir"/usr/share/polkit-1/actions \
+		"$subpkgdir"/usr/share/dbus-1/system.d \
+		"$subpkgdir"/usr/share/dbus-1/system-services \
+		"$subpkgdir"/usr/lib/libexec/kauth
+
+	mv "$pkgdir"/usr/lib/qt5/plugins/discover/alpineapk-backend.so \
+		"$subpkgdir"/usr/lib/qt5/plugins/discover/
+
+	# No notifier yer, but will be someday
+	#mv "$pkgdir"/usr/lib/qt5/plugins/discover-notifier/FlatpakNotifier.so \
+	#	"$subpkgdir"/usr/lib/qt5/plugins/discover-notifier/
+
+	# KAuth privilege escalation files
+	mv "$pkgdir"/usr/share/polkit-1/actions/org.kde.discover.alpineapkbackend.policy \
+		"$subpkgdir"/usr/share/polkit-1/actions/
+	mv "$pkgdir"/usr/share/dbus-1/system.d/org.kde.discover.alpineapkbackend.conf \
+		"$subpkgdir"/usr/share/dbus-1/system.d/
+	mv "$pkgdir"/usr/share/dbus-1/system-services/org.kde.discover.alpineapkbackend.service \
+		"$subpkgdir"/usr/share/dbus-1/system-services/
+	mv "$pkgdir"/usr/lib/libexec/kauth/alpineapk_kauth_helper \
+		"$subpkgdir"/usr/lib/libexec/kauth/
+}
+
+backend_fwupd() {
+	pkgdesc="fwupd backend for $pkgname"
+	depends=""
+	install_if="$pkgname fwupd"
+
+	mkdir -p \
+		"$subpkgdir"/usr/lib/qt5/plugins/discover
+
+	mv "$pkgdir"/usr/lib/qt5/plugins/discover/fwupd-backend.so \
+		"$subpkgdir"/usr/lib/qt5/plugins/discover/
+}
+
+sha512sums="6b5f78338b30ebda04e201eac0b1ea8152089849241d92bcff1bf3e0a830e5f603e34102e6b6ccbed7b8cd6de5652a60cf218ab523d9655d1ac5b2c11b628542  discover-53542f79b17828b14c49a27e8a30d27d9dc757ec.tar.gz
+d466d4486383882a8d44b767c64fcd478afcb5ac62292aed739348ea32a54eaa83eaebd4cafbd04cdbaacc5f93f620e47b3f188f1399ceeeb34e3c498c801d47  apk-backend.patch"
