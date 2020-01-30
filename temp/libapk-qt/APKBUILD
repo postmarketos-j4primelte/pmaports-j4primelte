@@ -1,0 +1,48 @@
+# Maintainer: Alexey Min <alexey.min@gmail.com>
+pkgname=libapk-qt
+pkgver=0_git20200128
+pkgrel=1
+pkgdesc="Alpine Package Keeper (apk) Qt bindings"
+url="https://gitlab.com/minlexx/libapk-qt"
+arch="all"
+license="GPL-2.0-only"
+makedepends="cmake openssl-dev zlib-dev qt5-qtbase-dev"
+_commit="dfa340e33c53098af1c4e2f5914dd71691c66922"
+_apktools_commit="0b82bcc53e6027c74fae2c972d5d9fff54d95d6c"
+source="
+https://gitlab.com/minlexx/libapk-qt/-/archive/$_commit/libapk-qt-$_commit.tar.gz
+https://gitlab.alpinelinux.org/alpine/apk-tools/-/archive/$_apktools_commit/apk-tools-$_apktools_commit.tar.gz
+"
+subpackages="$pkgname-dev $pkgname-dbg"
+
+builddir="$srcdir/libapk-qt-$_commit"
+
+prepare() {
+	default_prepare
+	# apk-tools require manual patching to be compatible with C++ compiler
+	cd $builddir/../apk-tools-$_apktools_commit
+	patch -p1 -i $builddir/apk-tools-patches/cpp-compat.patch
+}
+
+build() {
+	cmake \
+		-S . \
+		-B build/ \
+		-DAPKTOOLS_DIR=../apk-tools-$_apktools_commit \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=/usr/lib \
+		-DBUILD_TESTING=ON
+	make -C build
+}
+
+check() {
+	make -C build test
+}
+
+package() {
+	make -C build DESTDIR="$pkgdir" install
+}
+
+sha512sums="92f3fff728df7a7521a64fbfa7008b7ab1f7d3868f1c31bbf983367d9732fba71a5d36627c6f317eb25db5d0a4dda70b0c1cb36376f29df2e4a80136638ffb7a  libapk-qt-dfa340e33c53098af1c4e2f5914dd71691c66922.tar.gz
+efff9b579a81ebdc9229af8c2cff2adbca9b0b94cf3ec6403b043a60f60e8d3e2307c68bb696cb52b97a5f2d6baff696cebb20e046a6478959a5500ea9cd2614  apk-tools-0b82bcc53e6027c74fae2c972d5d9fff54d95d6c.tar.gz"
