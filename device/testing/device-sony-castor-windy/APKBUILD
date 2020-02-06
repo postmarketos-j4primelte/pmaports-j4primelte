@@ -27,7 +27,7 @@ package() {
 
 nonfree_firmware() {
 	pkgdesc="Wifi, GPU firmware"
-	depends="linux-firmware firmware-adreno"
+	depends="linux-firmware-brcm firmware-adreno"
 	mkdir "$subpkgdir"
 }
 
