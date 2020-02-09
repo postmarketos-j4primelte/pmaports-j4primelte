@@ -1,13 +1,13 @@
 # Reference: <https://postmarketos.org/devicepkg>
 # Contributor: opendata26 <ctatlor97@gmail.com>
 pkgname=device-sony-castor-windy
-pkgver=1
-pkgrel=23
+pkgver=2
+pkgrel=0
 pkgdesc="Sony Xperia Z2 Tablet WIFI"
 url="https://postmarketos.org"
 arch="armv7"
 license="MIT"
-depends="postmarketos-base mkbootimg linux-sony-castor-windy mesa-dri-freedreno"
+depends="postmarketos-base mkbootimg linux-postmarketos-qcom-msm8974 mesa-dri-freedreno"
 makedepends="devicepkg-dev"
 subpackages="$pkgname-nonfree-firmware:nonfree_firmware"
 source="modules-load.conf deviceinfo 90-android-touch-dev.rules brcmfmac4335-sdio.txt"
@@ -32,6 +32,6 @@ nonfree_firmware() {
 }
 
 sha512sums="d8ce60ea7acaabf627ddca2f0887a4cda46f313b7aaf7934bef2fef8a6e0798ccefab849e4571e4e3fcd06ae34c1a6efe3b58b401e2e443416f6200e6d4ea769  modules-load.conf
-dfe2ff7435bb8df7f3d7a2a5f153cc08513eb4c01412540d3a40a99f8a6d86cd85f5b2b99b703ce28190799382d5c96caed646533db2ddbbd8726eed29c557b6  deviceinfo
+4cec99dd770d2be55bbacf46be2ac28651a99633f0ea283d3cf84e4a10c88a7b10485133962d02ea1f72cb8cc18935d63a32bc9461287e1a8c7e4631f094e865  deviceinfo
 fa0d8b7a17509f5882424e67e66f5f562705a076a12e8d9dd9363215c858d7801216520cf25373110671958b1e1589080b097170c760d18e621849b0b9090e05  90-android-touch-dev.rules
 b99a1bc0d430a261b6ab0b5ea12f2e996ab24ece6fe40ff57357697f4db976394c655a7c7a63e7c985f6356126a6b1d920eb0077817cb65ae18250f404282a68  brcmfmac4335-sdio.txt"
