@@ -27,6 +27,7 @@ builddir=$2
 _config=$3
 _carch=$4
 HOSTCC=$5
+OUTOFTREEBUILD=$6
 
 if [ -z "$srcdir" ] || [ -z "$builddir" ] || [ -z "$_config" ] ||
 	[ -z "$_carch" ] || [ -z "$HOSTCC" ]; then
@@ -48,6 +49,12 @@ for i in $makefiles; do
 	sed -i 's/-Werror//g' "$i"
 done
 
-# Prepare kernel config ('yes ""' for kernels lacking olddefconfig)
-cp "$srcdir/$_config" "$builddir"/.config
-yes "" | make -C "$builddir" ARCH="$_carch" HOSTCC="$HOSTCC" oldconfig
+if [ "$OUTOFTREEBUILD" = "1" ]; then
+	mkdir "$builddir"/out
+	cp "$srcdir/$_config" "$builddir"/out/.config
+	yes "" | make O="$builddir"/out ARCH="$_carch" HOSTCC="$HOSTCC" oldconfig
+else
+	# Prepare kernel config ('yes ""' for kernels lacking olddefconfig)
+	cp "$srcdir/$_config" "$builddir"/.config
+	yes "" | make -C "$builddir" ARCH="$_carch" HOSTCC="$HOSTCC" oldconfig
+fi

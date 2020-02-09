@@ -1,0 +1,25 @@
+# Contributor: Martijn Braam <martijn@brixit.nl>
+# Maintainer: Martijn Braam <martijn@brixit.nl>
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname="device-bq-freezerfhd"
+pkgdesc="BQ Aquaris M10 FHD"
+pkgver=0.1
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="postmarketos-base linux-bq-freezerfhd mkbootimg mesa-dri-swrast"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+
+sha512sums="ce4fe2552b6f6f9be6e1819140e9e3ddd0d56992e28039bfb9a9b4ad7a2580634c2d98af015fc9d9d3b0bde6ad6f9a2b1219f53fb071d11fbbcb457e96af46e4  deviceinfo"
