@@ -1,22 +1,21 @@
 # Maintainer: Nikita Ukhrenkov <thekit@disroot.org>
 pkgname=hildon-thumbnail
-pkgver=3.1.2
+pkgver=3.1.3
 pkgrel=0
 pkgdesc="The Hildon Thumbnailer daemon"
 arch="all !armhf !armv7"
 url="https://github.com/maemo-leste/$pkgname"
-license="GPL"
+license="LGPL-2.1-or-later"
 depends="libhildon"
 makedepends="libhildon-dev libosso-dev sqlite-dev libpng-dev libexif-dev libjpeg-turbo-dev gstreamer-dev autoconf automake libtool"
-source="$pkgname-$pkgver.tar.gz::https://github.com/maemo-leste/$pkgname/archive/$pkgver.tar.gz"
-subpackages="$pkgname-dev"
-
-builddir="$srcdir/$pkgname-$pkgver"
+source="$pkgname-$pkgver.tar.gz::https://github.com/maemo-leste/hildon-thumbnail/archive/$pkgver.tar.gz"
+subpackages="$pkgname-static $pkgname-dev"
 
 build() {
-	cd "$builddir"
 	./autogen.sh
-	./configure --prefix=/usr --sysconfdir=/etc
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc
 	# Work around "No rule to make target '../daemon/libshared.la', needed by 'hildon-thumbnailerd'"
 	make -C daemon/ libshared.la -j1
 	# Compilation fails with multiple threads
@@ -24,7 +23,6 @@ build() {
 }
 
 package() {
-	cd "$builddir"
-	make DESTDIR="$pkgdir/" -j1 install
+	make DESTDIR="$pkgdir" -j1 install
 }
-sha512sums="de3b94836762026a6acefee0ddcb0842b2c385aa9de2a6aef41ae6af9e23c8d490f777ae25f657373935aec76b0b080629ace5353af20968b6cc38764ca00949  hildon-thumbnail-3.1.2.tar.gz"
+sha512sums="6ff7922d2f2c28b33c242eb6a9fdae52ed5f09e2bdab52d597ee821baf039c02fd934b2a44f885d97f8de42f2fd835a60e814e9bef1d048ef16a921c1e80c75e  hildon-thumbnail-3.1.3.tar.gz"
