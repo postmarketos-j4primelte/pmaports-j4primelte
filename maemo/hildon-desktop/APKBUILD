@@ -1,7 +1,7 @@
 # Maintainer: Nikita Ukhrenkov <thekit@disroot.org>
 pkgname=hildon-desktop
-pkgver=2.2.157.11
-pkgrel=2
+pkgver=2.2.167
+pkgrel=0
 pkgdesc="Hildon desktop for Fremantle"
 arch="all !armhf !armv7"
 url="https://github.com/maemo-leste/hildon-desktop"
@@ -10,14 +10,18 @@ depends="libhildon libmatchbox2 libhildondesktop clutter gnome-menus profiled"
 makedepends="
 	autoconf
 	automake
+	clutter-dev
 	gnome-menus-dev
 	libhildondesktop-dev
+	libhildonmime-dev
 	libmatchbox2-dev
 	libtool
 	mce-headers
-	profiled-dev"
-source="$pkgname-$pkgver.tar.gz::https://github.com/maemo-leste/hildon-desktop/archive/$pkgver.tar.gz
-	build-fix.patch"
+	profiled-dev
+	"
+source="https://github.com/maemo-leste/hildon-desktop/archive/$pkgver/hildon-desktop-$pkgver.tar.gz
+	build-fix.patch
+	"
 
 build() {
 	./autogen.sh
@@ -32,5 +36,5 @@ package() {
 	# install -Dm644 "$builddir"/debian/hildon-desktop.xsession \
 	#	"$pkgdir"/usr/bin/hildon-desktop
 }
-sha512sums="4084f535b366283d2d7d1a2ca546a925c50506a97270c0bfbb9358f859a4e175d9fbd530ffa9e3251afe372c58352d91d4d707c9190b19b114f655f35ea16f58  hildon-desktop-2.2.157.11.tar.gz
+sha512sums="ab45dbc48be03639bf2a0303e5244f05bd731d28125a965320059942bcd0f1a61708469de0abd9db123d407b476c43b42988d793dffb29e278e6dafe4f1305d9  hildon-desktop-2.2.167.tar.gz
 f9f7ae9c4b175bb40d9f76a6716afdf3e77630bedee727b09b442b723a90f0dfa125937c483e75024343ae55eb60e5d824bc8bf3ce554c071cca9d88b9af2594  build-fix.patch"
