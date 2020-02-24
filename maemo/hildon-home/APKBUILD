@@ -1,27 +1,25 @@
 # Maintainer: Nikita Ukhrenkov <thekit@disroot.org>
 pkgname=hildon-home
-pkgver=0.3.72
-pkgrel=1
+pkgver=0.3.73
+pkgrel=0
 pkgdesc="Hildon Home application"
 arch="all !armhf !armv7"
 url="https://github.com/maemo-leste/$pkgname"
-license="GPL"
+license="LGPL-2.0-or-later"
 depends="libhildon"
 makedepends="libhildon-dev libhildondesktop-dev libosso-dev
 	hildon-thumbnail-dev libhildonfm-dev osso-bookmark-engine-dev
 	mce-headers sqlite-dev autoconf automake m4 libtool"
-source="$pkgname-$pkgver.tar.gz::https://github.com/maemo-leste/$pkgname/archive/$pkgver.tar.gz"
-
-builddir="$srcdir/$pkgname-$pkgver"
+source="$pkgname-$pkgver.tar.gz::https://github.com/maemo-leste/hildon-home/archive/$pkgver.tar.gz"
 
 build() {
-	cd "$builddir"
-	./autogen.sh --prefix=/usr CFLAGS="${CFLAGS} -Wno-error=deprecated-declarations -Wno-error=misleading-indentation"
+	./autogen.sh \
+		--prefix=/usr \
+		CFLAGS="${CFLAGS} -Wno-error=deprecated-declarations -Wno-error=misleading-indentation"
 	make
 }
 
 package() {
-	cd "$builddir"
 	make DESTDIR="$pkgdir/" install
 }
-sha512sums="9b66412c9679d433608b1749f848bb4abd7cbc016ac53b527e251c8b80a0bc982f61694cbadd7d439b8dec8dc6f9f6eb7a188dc8d32951ca67a5882c24d6d23f  hildon-home-0.3.72.tar.gz"
+sha512sums="3986800679fec177b34d56f49b0bcedc705ee636b6a233cb7fef4504c1d113f0df7501d79962e29b1efd0283a43d017fe0286b552a067394590f9c25b262d86b  hildon-home-0.3.73.tar.gz"
