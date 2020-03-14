@@ -1,0 +1,52 @@
+# Contributor: Daniele Debernardi <drebrez@gmail.com>
+# Maintainer: Daniele Debernardi <drebrez@gmail.com>
+# Reference: <https://postmarketos.org/vendorkernel>
+# Kernel config based on: arch/arm/configs/n900_defconfig
+
+pkgname="linux-nokia-n900"
+pkgver=5.1.21
+pkgrel=0
+pkgdesc="Nokia N900 Maemo Leste kernel fork"
+arch="armv7"
+_carch="arm"
+_flavor="nokia-n900"
+url="https://kernel.org"
+license="GPL-2.0-only"
+options="!strip !check !tracedeps"
+makedepends="bison findutils flex installkernel openssl-dev perl"
+
+# Source
+_repository="n9xx-linux"
+_commit="4b521294714505abe190478ad90e13d82081779c"
+_config="config-$_flavor.$arch"
+source="
+	$pkgname-$_commit.tar.gz::https://github.com/maemo-leste/$_repository/archive/$_commit.tar.gz
+	$_config
+"
+builddir="$srcdir/$_repository-$_commit"
+
+prepare() {
+	default_prepare
+	cp "$srcdir/$_config" .config
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-postmarketOS"
+}
+
+package() {
+	mkdir -p "$pkgdir"/boot
+	make zinstall modules_install dtbs_install \
+		ARCH="$_carch" \
+		INSTALL_PATH="$pkgdir"/boot \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_DTBS_PATH="$pkgdir"/usr/share/dtb
+
+	install -D "$builddir"/include/config/kernel.release \
+		"$pkgdir"/usr/share/kernel/$_flavor/kernel.release
+}
+
+sha512sums="5b7fd070a0d8adbb97d474c4d0684016f9fc251ad2270d6ea88f1f2211bc8f150f1c67d4471092ff6caed033fe41e5980f1b57446e781914a7a26171218fb98d  linux-nokia-n900-4b521294714505abe190478ad90e13d82081779c.tar.gz
+c7ba7ae60334c0bde8d084b37a059f6f4f883c38860ea500638ba23968f57e3072ae3f99f5cdd0dfbc369b57176bd88f1dc7e4449b2fc5c7a988add5defd59c4  config-nokia-n900.armv7"
