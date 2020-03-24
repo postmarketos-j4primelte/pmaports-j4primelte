@@ -1,0 +1,26 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=profiled
+pkgver=1.0.9
+pkgrel=0
+pkgdesc="profiled"
+url="https://git.sailfishos.org/mer-core/profiled"
+arch="all"
+license="BSD-2-Clause"
+depends_dev="dbus-dev"
+makedepends="$depends_dev doxygen dbus-glib-dev glib-dev"
+subpackages="$pkgname-static $pkgname-dev $pkgname-doc"
+source="https://git.sailfishos.org/mer-core/profiled/-/archive/$pkgver/profiled-$pkgver.tar.gz
+	profiled-fix-musl.patch
+	"
+
+build() {
+	make
+}
+
+package() {
+	ROOT="$pkgdir" make install
+}
+
+sha512sums="753fd8e79e31ea5153572cf476cfe12b9a94909613f341c7cd501517a00ed2a0a9306202dfb9022a1259a5ad269aa2c9607eea6fdd73661665cdc1c576959a4a  profiled-1.0.9.tar.gz
+b75bab22b42e2506ff2d6d65f5df56db9ffc9bfdeeb6b93261be20aceac49a8a7612c990abaaf6b607a6f6a72df039d4eb83d269a1d22d78a706828bf4d5cded  profiled-fix-musl.patch"
