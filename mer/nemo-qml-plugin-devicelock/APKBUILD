@@ -1,0 +1,27 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=nemo-qml-plugin-devicelock
+pkgver=0.2.24
+pkgrel=0
+pkgdesc="Nemo QML devicelock plugin"
+url="https://git.sailfishos.org/mer-core/nemo-qml-plugin-devicelock"
+arch="all"
+license="BSD-3-Clause"
+depends_dev="qt5-qtbase-dev qt5-qtdeclarative-dev nemo-qml-plugin-dbus-dev keepalive-dev elogind-dev"
+makedepends="$depends_dev"
+subpackages="$pkgname-static $pkgname-dev"
+source="https://git.sailfishos.org/mer-core/nemo-qml-plugin-devicelock/-/archive/$pkgver/nemo-qml-plugin-devicelock-$pkgver.tar.gz
+	fix-systemd-check.patch
+	"
+
+build() {
+	qmake-qt5
+	make
+}
+
+package() {
+	INSTALL_ROOT="$pkgdir" make install
+}
+
+sha512sums="716f519fee20fa70943f4bb389206363f072135d059669192d9d15c19df434ab6f9205c22ce901ba867a5cbf7a151e6a336b0303f1ca87abbf4ffa704be62a7e  nemo-qml-plugin-devicelock-0.2.24.tar.gz
+ade8d3ec6633aabeb77a025ce577f4dadc506b4f789256022ebd6b6aa1d81ce3a5b01cab6ee3aed889eb1f91de7d87774afc991c46b2a2b2a5424aa53c09d92a  fix-systemd-check.patch"
