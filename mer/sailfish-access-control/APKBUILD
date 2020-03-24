@@ -1,0 +1,25 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=sailfish-access-control
+pkgver=0.0.3
+pkgrel=0
+pkgdesc="A thin wrapper library on top of the getuid, getpwuid, getgrouplist, and friends"
+url="https://git.sailfishos.org/mer-core/sailfish-access-control"
+arch="all"
+license="LGPL-2.1-or-later"
+makedepends="qt5-qtbase-dev"
+source="https://git.sailfishos.org/mer-core/sailfish-access-control/-/archive/$pkgver/sailfish-access-control-$pkgver.tar.gz"
+options="!check" # No test suite available
+
+build() {
+	make -C glib
+
+	#qmake-qt5
+	#make
+}
+
+package() {
+	ROOT="$pkgdir" make -C glib install
+}
+
+sha512sums="cfd65133fa054c98d6807d8ff6eb9448317eac2df4782b3c55bbb4dd1a3f5a506a28632290b16cd70e59754091d538cef4ea7315912be3daf4e325c02dcd6776  sailfish-access-control-0.0.3.tar.gz"
