@@ -1,0 +1,26 @@
+diff --git a/src/daemon/daemon.pro b/src/daemon/daemon.pro
+index af921f3..3e66f55 100644
+--- a/src/daemon/daemon.pro
++++ b/src/daemon/daemon.pro
+@@ -12,7 +12,7 @@ PKGCONFIG += \
+         dbus-1 \
+         keepalive \
+         nemodbus \
+-        libsystemd-daemon
++        libsystemd
+ 
+ INCLUDEPATH += \
+         $$PWD/../ \
+diff --git a/src/nemo-devicelock/host/host.pro b/src/nemo-devicelock/host/host.pro
+index 87d6841..70e9f1b 100644
+--- a/src/nemo-devicelock/host/host.pro
++++ b/src/nemo-devicelock/host/host.pro
+@@ -12,7 +12,7 @@ QT += dbus
+ PKGCONFIG += \
+         dbus-1 \
+         keepalive \
+-        libsystemd-daemon
++        libsystemd
+ 
+ INCLUDEPATH += \
+         $$PWD/.. \
