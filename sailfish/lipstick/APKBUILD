@@ -1,0 +1,29 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=lipstick
+#pkgver=0.34.16
+pkgver=0.34.16_git20200404
+pkgrel=0
+_commit="0d4d35bd07b7aff32b951e6fd59daa462832fc06" # Branch jb42170_qt5.12
+pkgdesc="A project aimed at offering easy to modify user experiences for varying mobile device form factors"
+url="https://git.sailfishos.org/mer-core/lipstick"
+arch="all"
+license="LGPL-2.1-only"
+depends_dev="qt5-qtbase-dev qt5-qtdeclarative-dev qt5-qtsensors-dev qt5-qtwayland-dev qt5-qtsystems-dev mlite-dev nemo-keepalive-dev libresourceqt-dev libngf-qt-dev libusb-moded-qt-dev libmce-qt-dev nemo-qml-plugin-devicelock-dev ssu-sysinfo-dev nemo-qml-plugin-systemsettings-dev wayland-dev elogind-dev libxkbcommon-dev libdsme-dev"
+makedepends="$depends_dev doxygen graphviz qt5-qttools-dev qtchooser"
+source="$pkgname-$_commit.tar.gz::https://git.sailfishos.org/neochapay/lipstick/-/archive/$_commit/lipstick-$_commit.tar.gz
+	update-plugin-registertypes-to-qt5.14.patch
+	"
+builddir="$srcdir/$pkgname-$_commit"
+
+build() {
+	qmake-qt5
+	make
+}
+
+package() {
+	INSTALL_ROOT="$pkgdir" make install
+}
+
+sha512sums="2880677b1a81eb3a4eed003e8ba6ba21bb6ba2190933fd71c3c057d469a945a48f6d213f0612ee0efc2e595692a0e1d5fcc05de8d31e2d443e14210af8d151ad  lipstick-0d4d35bd07b7aff32b951e6fd59daa462832fc06.tar.gz
+a1c0bdc57818760960f8f2fbf6a168a9aada0ef1df6f3b9c56d13b8e43ee57ee62e069edd11798a6955ca5b4fb13d738064dd6b59902cda1448a1fad9c72414f  update-plugin-registertypes-to-qt5.14.patch"
