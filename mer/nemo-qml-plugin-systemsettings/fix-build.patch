@@ -1,0 +1,13 @@
+diff --git a/src/userinfo_p.h b/src/userinfo_p.h
+index 9e61568..22cc168 100644
+--- a/src/userinfo_p.h
++++ b/src/userinfo_p.h
+@@ -32,6 +32,8 @@
+ #ifndef USERINFOPRIVATE_H
+ #define USERINFOPRIVATE_H
+ 
++#include <sys/types.h>
++
+ #include <QObject>
+ #include <QString>
+ #include <QWeakPointer>

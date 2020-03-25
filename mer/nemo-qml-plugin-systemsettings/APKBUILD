@@ -1,0 +1,31 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=nemo-qml-plugin-systemsettings
+pkgver=0.5.40
+pkgrel=0
+pkgdesc="Nemo QML systemsettings plugin"
+url="https://git.sailfishos.org/mer-core/nemo-qml-plugin-systemsettings"
+arch="all"
+license="BSD-3-Clause"
+depends_dev="qt5-qtdeclarative-dev qt5-qtsystems-dev sailfish-access-control profiled-dev mlite-dev mce-dev timed-dev ssu-sysinfo-dev nemo-qml-plugin-dbus-dev user-managerd-dev libusb-moded-qt-dev"
+makedepends="$depends_dev qt5-qtbase-dev qtchooser libconnman-qt-dev libsailfishkeyprovider-dev nemo-qml-plugin-models-dev"
+subpackages="$pkgname-dev"
+source="https://git.sailfishos.org/mer-core/nemo-qml-plugin-systemsettings/-/archive/$pkgver/nemo-qml-plugin-systemsettings-$pkgver.tar.gz
+	0001-Remove-developer-mode.patch
+	0002-Remove-broken-certificatemodel.patch
+	fix-build.patch
+	"
+
+build() {
+	qmake-qt5
+	make
+}
+
+package() {
+	INSTALL_ROOT="$pkgdir" make install
+}
+
+sha512sums="e7cd00f33ef01bb8c3ba566db996af557346bf1301d1f4fd16719a17bcc1d3472e7d2caeb68014ff777a20896ae0a7c091e7ca5346eeb4025e85b99ab76e33d8  nemo-qml-plugin-systemsettings-0.5.40.tar.gz
+1074376c6196ae82247204391aaf53f037624634a598f7917d522c0ce9b35d8e2f9b34b98de75e6165b3f997ec4dfc07214c17d8be7db3c9b5873849c114b441  0001-Remove-developer-mode.patch
+c453754f6b6026dfe59842fafe8d7b1a9e52942f2de261b5249a1076380e558a96845c2747f40befb1eb357b29abc7c0455b639584b9892d2b7ebcf3d5ba2632  0002-Remove-broken-certificatemodel.patch
+07473069ca6da5e69d1f5d7ad9378fbf9de0fb4dda82e107ab7a012b579831f7c3f304c0fa0cf422075520c77c5a11fdadd4caac7b9901fc8affc60bf4971f68  fix-build.patch"
