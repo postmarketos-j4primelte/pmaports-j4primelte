@@ -1,0 +1,27 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=libsailfishkeyprovider
+pkgver=1.0.3
+pkgrel=0
+pkgdesc="Provides a class which can provide decoded keys to client applications"
+url="https://git.sailfishos.org/mer-core/libsailfishkeyprovider"
+arch="all"
+license="LGPL-2.1-only"
+depends_dev="qt5-qtbase-dev"
+makedepends="$depends_dev"
+subpackages="$pkgname-dev"
+source="https://git.sailfishos.org/mer-core/libsailfishkeyprovider/-/archive/$pkgver/libsailfishkeyprovider-$pkgver.tar.gz"
+
+build() {
+	qmake-qt5
+	make
+}
+
+package() {
+	INSTALL_ROOT="$pkgdir" make install
+
+	# Remove installed tests
+	rm -r "$pkgdir"/opt
+}
+
+sha512sums="ed0887beef141bd40fb82001f070ac95895ad4fec106dfeb0f662367f1849362a2a4d80d39edc5c6cb619ac9ef7c74e02720420b61688de6fa3a35f4b68b475d  libsailfishkeyprovider-1.0.3.tar.gz"
