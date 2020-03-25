@@ -1,0 +1,26 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=libiodata
+pkgver=0.19.10
+pkgrel=0
+pkgdesc="A library for reading and writing simple structured data"
+url="https://git.sailfishos.org/mer-core/libiodata"
+arch="all"
+license="LGPL-2.1-only"
+makedepends="bison flex qt5-qtbase-dev argp-standalone"
+subpackages="$pkgname-dev"
+source="https://git.sailfishos.org/mer-core/libiodata/-/archive/$pkgver/libiodata-$pkgver.tar.gz
+	add-missing-include.patch
+	"
+
+build() {
+	qmake-qt5
+	make -j1
+}
+
+package() {
+	INSTALL_ROOT="$pkgdir" make install
+}
+
+sha512sums="08009b7c4a88843ad822854bce26001cea4217d855103be9d7de3824b483f776e07d98630527603b62ea24155b8c15429f0e72dc90c38551c75c8236b3ce8993  libiodata-0.19.10.tar.gz
+58b3c92da8a5405829cd19db4298ad2e9308201a81ee91c8b6ac695069108d6e9ee0b5f7d39ff46b7d3c06eda06cf8e98ce9feb10fbf970da5d7e9b02e3f6afb  add-missing-include.patch"

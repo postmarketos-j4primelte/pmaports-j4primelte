@@ -1,0 +1,12 @@
+diff --git a/type-to-cxx/type-to-cxx.cpp b/type-to-cxx/type-to-cxx.cpp
+index 720edce..8d79823 100644
+--- a/type-to-cxx/type-to-cxx.cpp
++++ b/type-to-cxx/type-to-cxx.cpp
+@@ -10,6 +10,7 @@ using namespace std ;
+ #include "../src/storage.h"
+ #include "../src/log.h"
+ #include <crypt.h>
++#include <unistd.h>
+ 
+ void dump_h(ostringstream &h, iodata::validator *v)
+ {
