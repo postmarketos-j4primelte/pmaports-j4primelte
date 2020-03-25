@@ -1,0 +1,39 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=timed
+pkgver=3.6.5
+pkgrel=0
+pkgdesc="timed"
+url="https://git.sailfishos.org/mer-core/profiled"
+arch="all"
+license="LGPL-2.1-only"
+depends_dev="libiodata-dev elogind-dev sailfish-access-control"
+makedepends="$depends_dev qt5-qtbase-dev"
+subpackages="$pkgname-dev"
+source="https://git.sailfishos.org/mer-core/timed/-/archive/$pkgver/timed-$pkgver.tar.gz
+	fix-systemd-check.patch
+	0001-Fixes-build.patch
+	"
+
+prepare() {
+	default_prepare
+
+	mkdir -p src/h/timed-qt5
+	ln -f src/lib/qmacro.h src/h/timed-qt5/qmacro.h
+}
+
+build() {
+	qmake-qt5 -recursive
+	make
+}
+
+package() {
+	INSTALL_ROOT="$pkgdir" make install
+
+	# Remove installed tests
+	rm -r "$pkgdir"/opt
+}
+
+sha512sums="4c95622506de6f69151ce05f7aad920a12cbb0f44e5c02397354438c79f340a53d852a9804d59f75c4b3484156cbb97dc15088cd03be3897589d3a3c93adb322  timed-3.6.5.tar.gz
+44c510b4c30c1f510b412ae1d1cd7efc575eab27f2f318351e9c48abccb4ca998c12a62427353c65c905ad7b52c55b44bccee4bc93c8ea742d945acd41fbeb4a  fix-systemd-check.patch
+df9a671dd94f389b289e48c996cc12790810b89c5c6fae5918053ad506ebb434a64c5821831b6f49e74e7bc880546752aa021289871a48f6ac615209c201c0be  0001-Fixes-build.patch"
