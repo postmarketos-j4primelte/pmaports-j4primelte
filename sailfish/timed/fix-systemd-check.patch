@@ -1,0 +1,13 @@
+diff --git a/src/server/server.pro b/src/server/server.pro
+index 3bec0c7..dc1cc8f 100644
+--- a/src/server/server.pro
++++ b/src/server/server.pro
+@@ -82,7 +82,7 @@ SOURCES += notification.cpp
+ HEADERS += notification.h
+ 
+ CONFIG += link_pkgconfig iodata-qt5
+-PKGCONFIG += libpcrecpp libsystemd-daemon
++PKGCONFIG += libpcrecpp libsystemd
+ PKGCONFIG += sailfishaccesscontrol
+ 
+ CONFIG(dsme_dbus_if) {
