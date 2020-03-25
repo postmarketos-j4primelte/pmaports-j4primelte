@@ -1,0 +1,13 @@
+diff --git a/src/src.pro b/src/src.pro
+index f05a2e18..15c83358 100644
+--- a/src/src.pro
++++ b/src/src.pro
+@@ -150,7 +150,7 @@ PKGCONFIG += \
+     dsme_dbus_if \
+     keepalive \
+     libresourceqt5 \
+-    libsystemd-daemon \
++    libsystemd \
+     mlite5 \
+     mce \
+     mce-qt5 \
