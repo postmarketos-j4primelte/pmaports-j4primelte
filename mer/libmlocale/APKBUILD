@@ -1,0 +1,33 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=libmlocale
+pkgver=0.7.1
+pkgrel=0
+pkgdesc="Nemo libmlocale"
+url="https://git.sailfishos.org/mer-core/libmlocale"
+arch="all"
+license="LGPL-2.1-only"
+depends_dev="libexecinfo-dev icu-dev"
+makedepends="$depends_dev qt5-qtbase-dev qt5-qttools-dev bash"
+subpackages="$pkgname-dev"
+source="https://git.sailfishos.org/mer-core/libmlocale/-/archive/$pkgver/libmlocale-$pkgver.tar.gz
+	fix-deprecated-qt.patch
+	"
+options="!check" # No suitable tests
+
+build() {
+	QTDIR=/usr/lib/qt5 ./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc
+	make
+}
+
+package() {
+	INSTALL_ROOT="$pkgdir" make install
+
+	# Remove tests
+	rm -rf "$pkgdir"/opt
+}
+
+sha512sums="917bee1ca50ea964fe62aceee7ecbe3123e73b2f84e41d13a83e1c713c70e506d9eb8be9348e9cedece74f092db16af3f2d41c433adeadb7240715257b2e715a  libmlocale-0.7.1.tar.gz
+08d3f452fd59574a21d6e83f7301c112022c5a3586b894a9d48f8c3d1c8c4e9ca5acd3defd6d6a8201652460fd678cbaaa8fe4394ff43170ffd8bef17597811c  fix-deprecated-qt.patch"
