@@ -15,6 +15,7 @@ expected_directories = [
     "maemo",
     "main",
     "modem",
+    "sailfish",
     "temp",
 ]
 
