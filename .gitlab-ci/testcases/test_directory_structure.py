@@ -12,6 +12,7 @@ expected_directories = [
     "kde",
     "maemo",
     "main",
+    "mer",
     "modem",
     "temp",
 ]
