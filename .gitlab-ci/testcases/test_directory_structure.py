@@ -10,6 +10,7 @@ expected_directories = [
     "device/main",
     "device/testing",
     "firmware",
+    "glacier",
     "hybris",
     "kde",
     "maemo",
