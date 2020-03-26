@@ -1,0 +1,172 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+new file mode 100644
+index 0000000..ac7e640
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -0,0 +1,40 @@
++cmake_minimum_required(VERSION 3.6.0)
++
++project(glacier-pinquery
++	VERSION 0.3
++	DESCRIPTION "QML based PIN query application using ofono-qt")
++
++set(CMAKE_AUTOMOC ON)
++set(CMAKE_AUTORCC ON)
++
++set(CMAKE_INCLUDE_CURRENT_DIR ON)
++
++include(FindPkgConfig)
++include(FeatureSummary)
++include(GNUInstallDirs)
++
++set(QT_MIN_VERSION "5.6.0")
++find_package(Qt5 COMPONENTS Gui Qml Quick DBus REQUIRED)
++find_package(Glacier COMPONENTS App REQUIRED)
++
++find_package(PkgConfig REQUIRED)
++pkg_check_modules(QOFONO qofono-qt5 IMPORTED_TARGET)
++pkg_check_modules(SYSTEMD libsystemd)
++
++add_subdirectory(src)
++
++if(QOFONO_FOUND)
++	set_property(GLOBAL APPEND PROPERTY PACKAGES_FOUND qofono-qt5)
++else()
++	set_property(GLOBAL APPEND PROPERTY PACKAGES_NOT_FOUND qofono-qt5)
++endif()
++if(SYSTEMD_FOUND)
++	set_property(GLOBAL APPEND PROPERTY PACKAGES_FOUND libsystemd)
++	install(FILES glacier-pinquery.service
++		DESTINATION ${CMAKE_INSTALL_LIBDIR}/systemd/user)
++else()
++	set_property(GLOBAL APPEND PROPERTY PACKAGES_NOT_FOUND libsystemd)
++endif()
++
++
++feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
+diff --git a/glacier-pinquery.pro b/glacier-pinquery.pro
+deleted file mode 100644
+index d51b19c..0000000
+--- a/glacier-pinquery.pro
++++ /dev/null
+@@ -1,43 +0,0 @@
+-PROJECT_NAME = glacier-pinquery
+-TEMPLATE = app
+-CONFIG += ordered hide_symbols
+-QT += qml quick dbus
+-TARGET = $$PROJECT_NAME
+-
+-CONFIG += link_pkgconfig
+-PKGCONFIG += glacierapp
+-PKGCONFIG += qofono-qt5
+-
+-LIBS += -lglacierapp
+-
+-SOURCES += src/main.cpp \
+-           src/ofonosimif.cpp
+-
+-HEADERS += src/ofonosimif.h
+-
+-QML_FILES = qml/*.qml
+-JS_FILES = *qml/.js
+-
+-OTHER_FILES += $${QML_FILES} $${JS_FILES}
+-
+-target.path = /usr/bin/
+-INSTALLS += target
+-
+-desktop.files = $${PROJECT_NAME}.desktop
+-desktop.path = /usr/share/applications
+-INSTALLS += desktop
+-
+-qml.files = qml/glacier-pinquery.qml\
+-            qml/NumButton.qml\
+-            qml/PinEntry.qml\
+-            qml/PinNumPad.qml\
+-            qml/PinPage.qml
+-
+-qml.path = /usr/share/$${PROJECT_NAME}/qml/
+-INSTALLS += qml
+-
+-systemd.files = $${PROJECT_NAME}.service
+-systemd.path = /usr/lib/systemd/user/
+-INSTALLS += systemd
+-
+-OTHER_FILES += rpm/*
+diff --git a/rpm/glacier-pinquery.spec b/rpm/glacier-pinquery.spec
+index 982fded..2f81df8 100644
+--- a/rpm/glacier-pinquery.spec
++++ b/rpm/glacier-pinquery.spec
+@@ -11,6 +11,7 @@ Requires:   qt5-qtquickcontrols-nemo
+ Requires:   libglacierapp
+ Requires:   libqofono-qt5
+ 
++BuildRequires:  cmake
+ BuildRequires:  pkgconfig(Qt5Core)
+ BuildRequires:  pkgconfig(Qt5Qml)
+ BuildRequires:  pkgconfig(Qt5Quick)
+@@ -28,13 +29,16 @@ QML PIN query dialog
+ %setup -q -n %{name}-%{version}
+ 
+ %build
+-%qmake5 
+-make %{?jobs:-j%jobs}
++cmake -B build \
++	-DCMAKE_BUILD_TYPE=Release \
++	-DCMAKE_INSTALL_PREFIX=%{_prefix} \
++	-DCMAKE_VERBOSE_MAKEFILE=ON \
++	.
++cmake --build build
+ 
+ %install
+ rm -rf %{buildroot}
+-%qmake5_install
+-mkdir -p %{buildroot}%{_libdir}/systemd/user/
++DESTDIR=$RPM_BUILD_ROOT cmake --build build --target install
+ 
+ %files
+ %defattr(-,root,root,-)
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+new file mode 100644
+index 0000000..0a0ee10
+--- /dev/null
++++ b/src/CMakeLists.txt
+@@ -0,0 +1,18 @@
++set(SRC
++	main.cpp
++	ofonosimif.cpp
++	ofonosimif.h)
++
++add_executable(glacier-pinquery ${SRC})
++
++target_link_libraries(glacier-pinquery PUBLIC
++	Qt5::Gui
++	Qt5::Qml
++	Qt5::Quick
++	Qt5::DBus
++	Glacier::App
++	PkgConfig::QOFONO)
++install(TARGETS glacier-pinquery RUNTIME
++	DESTINATION ${CMAKE_INSTALL_BINDIR})
++install(DIRECTORY qml
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/glacier-pinquery)
+diff --git a/qml/NumButton.qml b/src/qml/NumButton.qml
+similarity index 100%
+rename from qml/NumButton.qml
+rename to src/qml/NumButton.qml
+diff --git a/qml/PinEntry.qml b/src/qml/PinEntry.qml
+similarity index 100%
+rename from qml/PinEntry.qml
+rename to src/qml/PinEntry.qml
+diff --git a/qml/PinNumPad.qml b/src/qml/PinNumPad.qml
+similarity index 100%
+rename from qml/PinNumPad.qml
+rename to src/qml/PinNumPad.qml
+diff --git a/qml/PinPage.qml b/src/qml/PinPage.qml
+similarity index 100%
+rename from qml/PinPage.qml
+rename to src/qml/PinPage.qml
+diff --git a/qml/glacier-pinquery.qml b/src/qml/glacier-pinquery.qml
+similarity index 100%
+rename from qml/glacier-pinquery.qml
+rename to src/qml/glacier-pinquery.qml

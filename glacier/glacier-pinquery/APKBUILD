@@ -1,0 +1,29 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=glacier-pinquery
+pkgver=0.3
+pkgrel=0
+pkgdesc="QML based PIN query application using ofono-qt"
+url="https://github.com/nemomobile-ux/glacier-pinquery"
+arch="all"
+license="LGPL-2.0-or-later"
+depends="qtquickcontrols-nemo"
+makedepends="cmake qt5-qtbase-dev qt5-qtdeclarative-dev libqofono-dev libglacierapp-dev"
+source="https://github.com/nemomobile-ux/glacier-pinquery/archive/$pkgver/glacier-pinquery-$pkgver.tar.gz
+	cmake-support.patch
+	"
+options="!check" # No tests
+
+build() {
+	cmake -B build \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr
+	make -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" make -C build install
+}
+
+sha512sums="2f170cc53e43a1767973b5ce3160e0f28af187e13cc3713a910cf8fc9fd22811c55ba382a0ce7c3439be5245615aeb4409476e029063d483eeda8aec7ffd9d0d  glacier-pinquery-0.3.tar.gz
+b2c77191bd7a55c24b66d1087d345def370a02d941ec65ba6fc4933bc1438e4763cdffe23e4045cbabcf2481aa02cc033ab4ef6dc47777ae5e4ca5d00c798cbc  cmake-support.patch"
