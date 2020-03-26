@@ -1,0 +1,32 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=glacier-gallery
+pkgver=0.2.3_git20200401
+pkgrel=0
+_commit="7fdec03941fd3edbc10fb166282bbe514cc6d126"
+pkgdesc="The Glacier image gallery"
+url="https://github.com/nemomobile-ux/glacier-gallery"
+arch="all"
+license="BSD-3-Clause"
+depends="qtquickcontrols-nemo mapplauncherd nemo-qml-plugin-thumbnailer"
+makedepends="cmake qt5-qtbase-dev qt5-qttools-dev libresourceqt-dev libglacierapp-dev"
+source="https://github.com/nemomobile-ux/glacier-gallery/archive/$_commit/glacier-gallery-$_commit.tar.gz
+	cmake-support.patch
+	"
+options="!check" # No tests
+builddir="$srcdir/$pkgname-$_commit"
+
+build() {
+	cmake -B build \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	make -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" make -C build install
+}
+
+sha512sums="8cbe9c6ffa0a75b89c8ef96797ca427225615197609ef76685ead3f128593d5d92a1a5bb32ec228163a091037f88fd3933c0289a4c18c209f18a24a95c200706  glacier-gallery-7fdec03941fd3edbc10fb166282bbe514cc6d126.tar.gz
+edebae7617853951de55f397e2f05fc0101e774a6e3b3efa55e043761b63e51c06832cd42fef31bd7a9fcad5b6770aafcb757a123d0eff8d7b7cd154fe811560  cmake-support.patch"

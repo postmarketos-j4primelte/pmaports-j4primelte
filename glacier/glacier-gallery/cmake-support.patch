@@ -1,0 +1,212 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+new file mode 100644
+index 0000000..ef81b81
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -0,0 +1,43 @@
++cmake_minimum_required(VERSION 3.6.0)
++
++project(glacier-gallery
++	VERSION 0.2.3
++	DESCRIPTION "The Glacier gallery")
++
++set(CMAKE_AUTOMOC ON)
++set(CMAKE_AUTORCC ON)
++
++set(CMAKE_INCLUDE_CURRENT_DIR ON)
++
++include(FeatureSummary)
++include(GNUInstallDirs)
++
++set(QT_MIN_VERSION "5.6.0")
++find_package(Qt5 COMPONENTS Gui Qml Quick LinguistTools REQUIRED)
++find_package(Glacier COMPONENTS App REQUIRED)
++find_package(PkgConfig REQUIRED)
++pkg_check_modules(LIBRESOURCEQT libresourceqt5 REQUIRED IMPORTED_TARGET)
++
++if(LIBRESOURCEQT_FOUND)
++	set_property(GLOBAL APPEND PROPERTY PACKAGES_FOUND libresourceqt5)
++else()
++	set_property(GLOBAL APPEND PROPERTY PACKAGES_NOT_FOUND libresourceqt5)
++endif()
++
++add_subdirectory(src)
++
++# Translations
++file(GLOB TS_FILES translations/*.ts)
++qt5_add_translation(QM_FILES ${TS_FILES})
++add_custom_target(translations DEPENDS ${QM_FILES})
++add_dependencies(glacier-gallery translations)
++
++install(FILES ${QM_FILES}
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/glacier-gallery/translations)
++
++install(FILES glacier-gallery.desktop
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
++install(DIRECTORY images
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/glacier-gallery)
++
++feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
+diff --git a/glacier-gallery.pro b/glacier-gallery.pro
+deleted file mode 100644
+index 8889e37..0000000
+--- a/glacier-gallery.pro
++++ /dev/null
+@@ -1,77 +0,0 @@
+-PROJECT_NAME = glacier-gallery
+-QT += qml quick
+-
+-qml.files = qml/*
+-qml.path = /usr/share/glacier-gallery/qml
+-INSTALLS += qml
+-
+-# qml API we provide
+-qml_api.files = qml/api/*
+-qml_api.path = $$[QT_INSTALL_QML]/org/nemomobile/gallery
+-INSTALLS += qml_api
+-
+-target.path = $$INSTALL_ROOT/usr/bin
+-INSTALLS += target
+-
+-desktop.files = $${PROJECT_NAME}.desktop
+-desktop.path = $$INSTALL_ROOT/usr/share/applications
+-INSTALLS += desktop
+-
+-images.files = images/*
+-images.path = /usr/share/glacier-gallery/images
+-INSTALLS += images
+-
+-systemd_dbus_service.path = $${INSTALL_ROOT}/usr/share/dbus-1/services
+-systemd_dbus_service.files = org.nemomobile.gallery.service
+-INSTALLS += systemd_dbus_service
+-
+-HEADERS += src/gallery.h
+-SOURCES += src/main.cpp \
+-    src/gallery.cpp
+-
+-TRANSLATIONS += translations/$${PROJECT_NAME}_en.ts\
+-                translations/$${PROJECT_NAME}_ru.ts\
+-                translations/$${PROJECT_NAME}_es.ts\
+-                translations/$${PROJECT_NAME}_nl.ts
+-i18n_files.files = translations
+-i18n_files.path = /usr/share/$$TARGET
+-INSTALLS += i18n_files
+-
+-# do not edit below here
+-TEMPLATE = app
+-CONFIG -= app_bundle
+-TARGET = $$PROJECT_NAME
+-
+-CONFIG += link_pkgconfig
+-PKGCONFIG += libresourceqt5 glacierapp
+-
+-LIBS += -lglacierapp
+-
+-packagesExist(qdeclarative5-boostable) {
+-    message("Building with qdeclarative5-boostable support")
+-    DEFINES += HAS_BOOSTER
+-    PKGCONFIG += qdeclarative5-boostable
+-} else {
+-    warning("qdeclarative5-boostable not available; startup times will be slower")
+-}
+-
+-DISTFILES += \
+-    qml/api/qmldir \
+-    qml/api/GalleryView.qml \
+-    qml/api/GalleryModel.qml \
+-    qml/api/GalleryDelegate.qml \
+-    qml/ImageContainer.qml \
+-    qml/ImagePage.qml \
+-    qml/ImageSlideshowPage.qml \
+-    qml/VideoPlayer.qml \
+-    qml/SortDialog.qml \
+-    qml/SingleImagePage.qml \
+-    qml/ZoomController.qml \
+-    qml/MainPage.qml \
+-    rpm/glacier-gallery.spec \
+-    qml/glacier-gallery.qml \
+-    translations/glacier-gallery_en.ts \
+-    translations/glacier-gallery_ru.ts \
+-    translations/glacier-gallery_es.ts \
+-    translations/glacier-gallery_nl.ts
+-
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+new file mode 100644
+index 0000000..e867460
+--- /dev/null
++++ b/src/CMakeLists.txt
+@@ -0,0 +1,22 @@
++set(SRC
++	main.cpp
++	gallery.cpp
++	gallery.h)
++
++add_executable(glacier-gallery ${SRC})
++
++target_link_libraries(glacier-gallery
++	Qt5::Gui
++	Qt5::Qml
++	Qt5::Quick
++	Glacier::App
++	PkgConfig::LIBRESOURCEQT)
++
++install(TARGETS glacier-gallery RUNTIME
++	DESTINATION ${CMAKE_INSTALL_BINDIR})
++install(DIRECTORY qml
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/glacier-gallery
++	PATTERN "api" EXCLUDE)
++install(DIRECTORY qml/api/
++	DESTINATION
++	${CMAKE_INSTALL_LIBDIR}/qt5/qml/org/nemomobile/gallery)
+diff --git a/qml/ImageContainer.qml b/src/qml/ImageContainer.qml
+similarity index 100%
+rename from qml/ImageContainer.qml
+rename to src/qml/ImageContainer.qml
+diff --git a/qml/ImagePage.qml b/src/qml/ImagePage.qml
+similarity index 100%
+rename from qml/ImagePage.qml
+rename to src/qml/ImagePage.qml
+diff --git a/qml/ImageSlideshowPage.qml b/src/qml/ImageSlideshowPage.qml
+similarity index 100%
+rename from qml/ImageSlideshowPage.qml
+rename to src/qml/ImageSlideshowPage.qml
+diff --git a/qml/MainPage.qml b/src/qml/MainPage.qml
+similarity index 100%
+rename from qml/MainPage.qml
+rename to src/qml/MainPage.qml
+diff --git a/qml/SingleImagePage.qml b/src/qml/SingleImagePage.qml
+similarity index 100%
+rename from qml/SingleImagePage.qml
+rename to src/qml/SingleImagePage.qml
+diff --git a/qml/SortDialog.qml b/src/qml/SortDialog.qml
+similarity index 100%
+rename from qml/SortDialog.qml
+rename to src/qml/SortDialog.qml
+diff --git a/qml/VideoPlayer.qml b/src/qml/VideoPlayer.qml
+similarity index 100%
+rename from qml/VideoPlayer.qml
+rename to src/qml/VideoPlayer.qml
+diff --git a/qml/ZoomController.qml b/src/qml/ZoomController.qml
+similarity index 100%
+rename from qml/ZoomController.qml
+rename to src/qml/ZoomController.qml
+diff --git a/qml/api/GalleryDelegate.qml b/src/qml/api/GalleryDelegate.qml
+similarity index 100%
+rename from qml/api/GalleryDelegate.qml
+rename to src/qml/api/GalleryDelegate.qml
+diff --git a/qml/api/GalleryModel.qml b/src/qml/api/GalleryModel.qml
+similarity index 100%
+rename from qml/api/GalleryModel.qml
+rename to src/qml/api/GalleryModel.qml
+diff --git a/qml/api/GalleryView.qml b/src/qml/api/GalleryView.qml
+similarity index 100%
+rename from qml/api/GalleryView.qml
+rename to src/qml/api/GalleryView.qml
+diff --git a/qml/api/qmldir b/src/qml/api/qmldir
+similarity index 100%
+rename from qml/api/qmldir
+rename to src/qml/api/qmldir
+diff --git a/qml/glacier-gallery.qml b/src/qml/glacier-gallery.qml
+similarity index 100%
+rename from qml/glacier-gallery.qml
+rename to src/qml/glacier-gallery.qml
