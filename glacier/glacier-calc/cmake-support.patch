@@ -1,0 +1,96 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+new file mode 100644
+index 0000000..771249f
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -0,0 +1,24 @@
++cmake_minimum_required(VERSION 3.1.0)
++
++project(glacier-calc
++	VERSION 0.3.1
++	DESCRIPTION "The Glacier calculator")
++
++set(CMAKE_AUTOMOC ON)
++set(CMAKE_AUTORCC ON)
++
++set(CMAKE_INCLUDE_CURRENT_DIR ON)
++
++include(FeatureSummary)
++include(GNUInstallDirs)
++
++set(QT_MIN_VERSION "5.6.0")
++find_package(Qt5 COMPONENTS Core Gui Quick REQUIRED)
++find_package(Glacier COMPONENTS App REQUIRED)
++
++add_subdirectory(src)
++
++install(FILES glacier-calc.desktop
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications/)
++install(FILES icon-app-calculator.png
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/glacier-calc/images/)
+diff --git a/glacier-calc.pro b/glacier-calc.pro
+deleted file mode 100644
+index 3908172..0000000
+--- a/glacier-calc.pro
++++ /dev/null
+@@ -1,37 +0,0 @@
+-QT += qml quick
+-
+-TEMPLATE = app
+-TARGET = glacier-calc
+-
+-SOURCES += src/main.cpp
+-
+-OTHER_FILES += \
+-    src/qml/calculator.js \
+-    src/qml/glacier-calc.qml.qml \
+-    src/qml/Display.qml \
+-    src/qml/CalcButton.qml \
+-    src/qml/HistoryDisplay.qml \
+-    icon-app-calculator.png
+-
+-target.path = /usr/bin
+-INSTALLS += target
+-
+-desktop.path = /usr/share/applications
+-desktop.files = glacier-calc.desktop
+-INSTALLS += desktop
+-
+-qml.path = /usr/share/glacier-calc/qml
+-qml.files = src/qml/*
+-INSTALLS += qml
+-
+-icon.files = icon-app-calculator.png
+-icon.path = /usr/share/glacier-calc/images
+-INSTALLS += icon
+-
+-DISTFILES += \
+-    rpm/glacier-calc.spec
+-
+-CONFIG += link_pkgconfig
+-PKGCONFIG += glacierapp
+-
+-LIBS += -lglacierapp
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+new file mode 100644
+index 0000000..8849d0f
+--- /dev/null
++++ b/src/CMakeLists.txt
+@@ -0,0 +1,17 @@
++set(SRC main.cpp)
++set(QML
++	qml/CalcButton.qml
++	qml/HistoryDisplay.qml
++	qml/Display.qml
++	qml/glacier-calc.qml
++	qml/calculator.js)
++
++add_executable(glacier-calc ${SRC})
++target_link_libraries(glacier-calc
++	Qt5::Core
++	Qt5::Gui
++	Glacier::App)
++install(TARGETS glacier-calc RUNTIME
++	DESTINATION ${CMAKE_INSTALL_BINDIR})
++install(FILES ${QML}
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/glacier-calc/qml/)

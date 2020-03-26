@@ -1,0 +1,28 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=glacier-calc
+pkgver=0.3.1
+pkgrel=0
+pkgdesc="The Glacier calculator"
+url="https://github.com/nemomobile-ux/glacier-calc"
+arch="all"
+license="BSD-3-Clause"
+depends="qtquickcontrols-nemo mapplauncherd"
+makedepends="cmake qt5-qtbase-dev qt5-qtdeclarative-dev libglacierapp-dev"
+source="https://github.com/nemomobile-ux/glacier-calc/archive/$pkgver/glacier-calc-$pkgver.tar.gz
+	cmake-support.patch
+	"
+
+build() {
+	cmake -B build \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr
+	make -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" make -C build install
+}
+
+sha512sums="511dbf9649052df3c5bd17eb2194b946de121f1f90e310d8183fb8340e3f9b7444df66fd645b4f2528dc0ad35e33d6a9777fee1fec30174fa734607a182b6652  glacier-calc-0.3.1.tar.gz
+4279eeb3c003edcd782efa52af838d4647b657b43e3c6a8e71cad820a9e4ce331bb89aa2290976894ee67d4ebd6f3ec764e32530e0cf6d06d236e227200878ed  cmake-support.patch"
