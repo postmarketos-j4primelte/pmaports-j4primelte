@@ -1,0 +1,119 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+new file mode 100644
+index 0000000..5eb3d7a
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -0,0 +1,26 @@
++cmake_minimum_required(VERSION 3.6.0)
++
++project(glacier-filemuncher
++	VERSION 0.2.0
++	DESCRIPTION "The Glacier file manager")
++
++set(CMAKE_AUTOMOC ON)
++set(CMAKE_AUTORCC ON)
++
++set(CMAKE_INCLUDE_CURRENT_DIR ON)
++
++include(FeatureSummary)
++include(GNUInstallDirs)
++
++set(QT_MIN_VERSION "5.6.0")
++find_package(Qt5 COMPONENTS Gui Qml Quick REQUIRED)
++find_package(Glacier COMPONENTS App REQUIRED)
++
++add_subdirectory(src)
++
++install(FILES glacier-filemuncher.desktop
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
++install(FILES icon-app-filemanager.png
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/glacier-filemuncher/images)
++
++feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
+diff --git a/glacier-filemuncher.pro b/glacier-filemuncher.pro
+deleted file mode 100644
+index 734b4ab..0000000
+--- a/glacier-filemuncher.pro
++++ /dev/null
+@@ -1,53 +0,0 @@
+-PROJECT_NAME = glacier-filemuncher
+-QT += qml quick
+-TEMPLATE = app
+-DEPENDPATH += .
+-INCLUDEPATH += .
+-CONFIG -= app_bundle
+-TARGET = $$PROJECT_NAME
+-
+-
+-qml.files = src/qml/*.qml
+-qml.files += src/qml/*.js
+-qml.path = /usr/share/$${PROJECT_NAME}/qml/
+-INSTALLS += qml
+-
+-images.files = src/*.png
+-images.path = /usr/share/$${PROJECT_NAME}/images
+-INSTALLS += images
+-
+-# qml API we provide
+-api.files = src/qml/api/*
+-api.path = $$[QT_INSTALL_QML]/org/nemomobile/filemuncher
+-INSTALLS += api
+-
+-target.path = /usr/bin
+-INSTALLS += target
+-
+-desktop.files = $${PROJECT_NAME}.desktop
+-desktop.path = /usr/share/applications
+-INSTALLS += desktop
+-
+-# Input
+-SOURCES += src/main.cpp
+-
+-HEADERS +=
+-
+-CONFIG += link_pkgconfig
+-
+-DISTFILES += \
+-    src/qml/api/qmldir \
+-    src/qml/api/FileListDelegate.qml \
+-    src/qml/api/FilePermissionIndicator.qml \
+-    src/qml/prohibitionsign.svg \
+-    src/qml/InputSheet.qml \
+-    src/qml/DirectoryPage.qml \
+-    src/qml/DetailViewSheet.qml \
+-    src/qml/FilePickerSheet.qml \
+-    rpm/glacier-filemuncher.spec \
+-    src/qml/glacier-filemuncher.qml
+-
+-CONFIG += link_pkgconfig
+-PKGCONFIG += glacierapp
+-
+-LIBS += -lglacierapp
+diff --git a/src/icon-app-filemanager.png b/icon-app-filemanager.png
+similarity index 100%
+rename from src/icon-app-filemanager.png
+rename to icon-app-filemanager.png
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+new file mode 100644
+index 0000000..06bd1fa
+--- /dev/null
++++ b/src/CMakeLists.txt
+@@ -0,0 +1,18 @@
++set(SRC main.cpp)
++
++add_executable(glacier-filemuncher ${SRC})
++
++target_link_libraries(glacier-filemuncher
++	Qt5::Gui
++	Qt5::Qml
++	Qt5::Quick
++	Glacier::App)
++
++install(TARGETS glacier-filemuncher RUNTIME
++	DESTINATION ${CMAKE_INSTALL_BINDIR})
++install(DIRECTORY qml
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/glacier-filemuncher
++	PATTERN "api" EXCLUDE)
++install(DIRECTORY qml/api/
++	DESTINATION
++	${CMAKE_INSTALL_LIBDIR}/qt5/qml/org/nemomobile/filemuncher)

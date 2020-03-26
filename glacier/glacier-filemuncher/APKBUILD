@@ -1,0 +1,29 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=glacier-filemuncher
+pkgver=0.2.2
+pkgrel=0
+pkgdesc="The Glacier file manager"
+url="https://github.com/nemomobile-ux/glacier-filemuncher"
+arch="all"
+license="LGPL-2.0-or-later"
+depends="mapplauncherd nemo-qml-plugin-thumbnailer nemo-qml-plugin-folderlistmodel qtquickcontrols-nemo"
+makedepends="cmake qt5-qtbase-dev libglacierapp-dev"
+source="https://github.com/nemomobile-ux/glacier-filemuncher/archive/$pkgver/glacier-filemuncher-$pkgver.tar.gz
+	cmake-support.patch
+	"
+
+build() {
+	cmake -B build \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	make -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" make -C build install
+}
+
+sha512sums="00fb016caa72a9de5e33d7e0fc7e40bb8d2a19d30c9166c32ec4cce1679951df048a674b94377b57c5432415d91e0587425c0cde18ea478b3f14664d60b08c87  glacier-filemuncher-0.2.2.tar.gz
+a5d65a79163c942c721674513605d1b865362832987b6abdcdef871108ef4de2eb1a09357d62f49597aa8757e52c4674b8009c653736385a59dd7a5c0a5cbb15  cmake-support.patch"
