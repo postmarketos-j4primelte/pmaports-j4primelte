@@ -1,0 +1,127 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+new file mode 100644
+index 0000000..764aa48
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -0,0 +1,33 @@
++cmake_minimum_required(VERSION 3.6.0)
++
++project(glacier-camera
++	VERSION 0.1.2
++	DESCRIPTION "The Glacier camera")
++
++set(CMAKE_AUTOMOC ON)
++set(CMAKE_AUTORCC ON)
++
++set(CMAKE_INCLUDE_CURRENT_DIR ON)
++
++include(FeatureSummary)
++include(GNUInstallDirs)
++
++set(QT_MIN_VERSION "5.6.0")
++find_package(Qt5 COMPONENTS Gui Qml Quick LinguistTools REQUIRED)
++find_package(Glacier COMPONENTS App REQUIRED)
++
++add_subdirectory(src)
++
++# Translations
++file(GLOB TS_FILES translations/*.ts)
++qt5_add_translation(QM_FILES ${TS_FILES})
++add_custom_target(translations DEPENDS ${QM_FILES})
++add_dependencies(glacier-camera translations)
++
++install(FILES ${QM_FILES}
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/glacier-camera/translations)
++
++install(FILES glacier-camera.desktop
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
++install(DIRECTORY images
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/glacier-camera)
+diff --git a/glacier-camera.pro b/glacier-camera.pro
+deleted file mode 100644
+index c2914be..0000000
+--- a/glacier-camera.pro
++++ /dev/null
+@@ -1,38 +0,0 @@
+-TEMPLATE = app
+-TARGET = glacier-camera
+-
+-QT += qml quick
+-
+-CONFIG += link_pkgconfig
+-PKGCONFIG += glacierapp
+-LIBS += -lglacierapp
+-
+-SOURCES += main.cpp
+-
+-target.path = /usr/bin
+-
+-qml.files = qml/*
+-qml.path = /usr/share/glacier-camera/qml
+-
+-images.files = images/*
+-images.path = /usr/share/glacier-camera/images/
+-
+-desktop.files = glacier-camera.desktop
+-desktop.path = /usr/share/applications
+-
+-TRANSLATIONS += translations/glacier-camera_ru.ts
+-
+-i18n_files.files = translations/*
+-i18n_files.path = /usr/share/$$TARGET/translations
+-
+-INSTALLS += target desktop qml images i18n_files
+-
+-DISTFILES += \
+-    rpm/glacier-camera.spec \
+-    qml/components.qml \
+-    qml/glacier-camera.qml \
+-    qml/components/ClickIcon.qml \
+-    qml/pages/CameraPage.qml \
+-    qml/pages/PreviewPage.qml \
+-    qml/pages/SettingsPage.qml \
+-    translations/*
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+new file mode 100644
+index 0000000..c596dbc
+--- /dev/null
++++ b/src/CMakeLists.txt
+@@ -0,0 +1,14 @@
++set(SRC main.cpp)
++
++add_executable(glacier-camera ${SRC})
++
++target_link_libraries(glacier-camera
++	Qt5::Gui
++	Qt5::Qml
++	Qt5::Quick
++	Glacier::App)
++
++install(TARGETS glacier-camera RUNTIME
++	DESTINATION ${CMAKE_INSTALL_BINDIR})
++install(DIRECTORY qml
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/glacier-camera)
+diff --git a/main.cpp b/src/main.cpp
+similarity index 100%
+rename from main.cpp
+rename to src/main.cpp
+diff --git a/qml/components/ClickIcon.qml b/src/qml/components/ClickIcon.qml
+similarity index 100%
+rename from qml/components/ClickIcon.qml
+rename to src/qml/components/ClickIcon.qml
+diff --git a/qml/glacier-camera.qml b/src/qml/glacier-camera.qml
+similarity index 100%
+rename from qml/glacier-camera.qml
+rename to src/qml/glacier-camera.qml
+diff --git a/qml/pages/CameraPage.qml b/src/qml/pages/CameraPage.qml
+similarity index 100%
+rename from qml/pages/CameraPage.qml
+rename to src/qml/pages/CameraPage.qml
+diff --git a/qml/pages/PreviewPage.qml b/src/qml/pages/PreviewPage.qml
+similarity index 100%
+rename from qml/pages/PreviewPage.qml
+rename to src/qml/pages/PreviewPage.qml
+diff --git a/qml/pages/SettingsPage.qml b/src/qml/pages/SettingsPage.qml
+similarity index 100%
+rename from qml/pages/SettingsPage.qml
+rename to src/qml/pages/SettingsPage.qml

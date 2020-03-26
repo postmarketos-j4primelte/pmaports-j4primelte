@@ -1,0 +1,31 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=glacier-camera
+pkgver=0.1.2_git20181025
+pkgrel=0
+_commit="ceed1e710f5f1c86b7d3b3953de3d82bfad6e8a0"
+pkgdesc="The Glacier camera"
+url="https://github.com/nemomobile-ux/glacier-camera"
+arch="all"
+license="LGPL-2.0-or-later"
+depends="nemo-qml-plugin-settings qtquickcontrols-nemo mapplauncherd"
+makedepends="cmake qt5-qtbase-dev qt5-qtdeclarative-dev qt5-qttools-dev libglacierapp-dev"
+source="https://github.com/nemomobile-ux/glacier-camera/archive/$_commit/glacier-camera-$_commit.tar.gz
+	cmake-support.patch
+	"
+options="!check" # No tests
+builddir="$srcdir/$pkgname-$_commit"
+
+build() {
+	cmake -B build \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr
+	make -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" make -C build install
+}
+
+sha512sums="4fd202081cf9b3fb1febf53bab0c180e02a37554da7ad3bdc9182ef5f443b503adf34f8b7a249bfa322861c6356ce8fc3a2beee5cf17c923333e6e47ca5c393b  glacier-camera-ceed1e710f5f1c86b7d3b3953de3d82bfad6e8a0.tar.gz
+e03d73851d4a47bf91e7651837b81f67151ea54fcdabcdc9fa095e41b598a622575c79b1124f7ce3bfd199c1478b44c1a8f2caf2cde8881e5060fbd7515adb99  cmake-support.patch"
