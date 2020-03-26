@@ -1,0 +1,90 @@
+From ad12f833a28ed0a2b09c92add5635ea3807061cc Mon Sep 17 00:00:00 2001
+From: Samuel Pascua <pascua.samuel.14@gmail.com>
+Date: Wed, 25 Mar 2020 15:43:07 +0300
+Subject: [PATCH 3/4] ARM: dts: qcom: msm8974-klte: add support for display
+
+Add initial support for the display found on the Samsung Galaxy 5 (klte)
+phone. This is based on work from Jonathan Marek & Brian Masney.
+---
+ .../boot/dts/qcom-msm8974-samsung-klte.dts    | 58 +++++++++++++++++++
+ 1 file changed, 58 insertions(+)
+
+diff --git a/arch/arm/boot/dts/qcom-msm8974-samsung-klte.dts b/arch/arm/boot/dts/qcom-msm8974-samsung-klte.dts
+index f40c40aabeb8..0f905c68791d 100644
+--- a/arch/arm/boot/dts/qcom-msm8974-samsung-klte.dts
++++ b/arch/arm/boot/dts/qcom-msm8974-samsung-klte.dts
+@@ -248,6 +248,16 @@
+ 				bias-pull-up;
+ 			};
+ 		};
++
++		panel_pin: panel {
++			te {
++				pins = "gpio12";
++				function = "mdp_vsync";
++
++				drive-strength = <2>;
++				bias-disable;
++			};
++		};
+ 	};
+ 
+ 	sdhci@f9824900 {
+@@ -287,6 +297,54 @@
+ 			};
+ 		};
+ 	};
++
++	mdss@fd900000 {
++		status = "ok";
++
++		mdp@fd900000 {
++			status = "ok";
++		};
++
++		dsi@fd922800 {
++			status = "ok";
++
++			vdda-supply = <&pma8084_l2>;
++			vdd-supply = <&pma8084_l22>;
++			vddio-supply = <&pma8084_l12>;
++
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			ports {
++				port@1 {
++					endpoint {
++						remote-endpoint = <&panel_in>;
++						data-lanes = <0 1 2 3>;
++					};
++				};
++			};
++
++			panel: panel@0 {
++				reg = <0>;
++				compatible = "samsung,s6e3fa2";
++
++				pinctrl-names = "default";
++				pinctrl-0 = <&panel_pin>;
++
++				port {
++					panel_in: endpoint {
++						remote-endpoint = <&dsi0_out>;
++					};
++				};
++			};
++		};
++
++		dsi-phy@fd922a00 {
++			status = "ok";
++
++			vddio-supply = <&pma8084_l12>;
++		};
++	};
+ };
+ 
+ &spmi_bus {
+-- 
+2.20.1
+

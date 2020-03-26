@@ -1,0 +1,27 @@
+From 54929f3c5a4993a76a0a0aa66bd0f26d6fdc8ea3 Mon Sep 17 00:00:00 2001
+From: Samuel Pascua <pascua.samuel.14@gmail.com>
+Date: Wed, 25 Mar 2020 15:29:00 +0300
+Subject: [PATCH 1/4] dt-bindings: drm/panel: simple: add samsung,s6e3fa2 panel
+
+Add binding for the Samsung S6E3FA2 AMOLED panel that is found on Samsung Galaxy S5 (klte).
+---
+ .../devicetree/bindings/display/panel/samsung,s6e3fa2.txt  | 7 +++++++
+ 1 file changed, 7 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/display/panel/samsung,s6e3fa2.txt
+
+diff --git a/Documentation/devicetree/bindings/display/panel/samsung,s6e3fa2.txt b/Documentation/devicetree/bindings/display/panel/samsung,s6e3fa2.txt
+new file mode 100644
+index 000000000000..f8ab662d7745
+--- /dev/null
++++ b/Documentation/devicetree/bindings/display/panel/samsung,s6e3fa2.txt
+@@ -0,0 +1,7 @@
++Samsung S6E3FA2 5.10" 1080×1920 AMOLED Panel
++
++Required properties:
++- compatible: must be "samsung,s6e3fa2"
++
++This binding is compatible with the simple-panel binding, which is specified
++in simple-panel.txt in this directory.
+-- 
+2.20.1
+

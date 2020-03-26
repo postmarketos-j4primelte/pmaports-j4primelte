@@ -1,0 +1,31 @@
+From 07f5ae434cde0df0a4172a795a774df27c17ab49 Mon Sep 17 00:00:00 2001
+From: Samuel Pascua <pascua.samuel.14@gmail.com>
+Date: Wed, 25 Mar 2020 11:18:30 +0300
+Subject: [PATCH 4/4] ARM: dts: qcom: msm8974-klte: add support for GPU
+
+---
+ arch/arm/boot/dts/qcom-msm8974-samsung-klte.dts | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/arm/boot/dts/qcom-msm8974-samsung-klte.dts b/arch/arm/boot/dts/qcom-msm8974-samsung-klte.dts
+index 0f905c68791d..645858687b98 100644
+--- a/arch/arm/boot/dts/qcom-msm8974-samsung-klte.dts
++++ b/arch/arm/boot/dts/qcom-msm8974-samsung-klte.dts
+@@ -298,6 +298,14 @@
+ 		};
+ 	};
+ 
++	opp_table {
++		status = "ok";
++	};
++
++	adreno@fdb00000 {
++		status = "ok";
++	};
++
+ 	mdss@fd900000 {
+ 		status = "ok";
+ 
+-- 
+2.20.1
+
