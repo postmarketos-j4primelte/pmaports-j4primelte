@@ -4,7 +4,7 @@ _config="config-$_flavor.$CARCH"
 pkgname=linux-$_flavor
 
 pkgver=5.4.0_rc6
-pkgrel=2
+pkgrel=3
 
 arch="armv7"
 pkgdesc="Kernel close to mainline with extra patches for Qualcomm MSM8974 devices"
@@ -164,6 +164,6 @@ dev() {
 sha512sums="36c6b2fd37f5ae13937ab0d3900cc8ddee2c78f963d74198488264ce2b10916e8150b6fb9983fe3ef92ac5ffd6d3af290a027e51f4aa7fe9bb6677e11406de3d  linux-postmarketos-qcom-f5cb192a3e49fc69c2c1df8b684f954152a8a80c.tar.gz
 6e51ab9de1881718d4518d93c143f99bada46ce0a6d543296587483eab63d0cd2b52ca7f3a0b407ce1256006ce8231655c0b907aaf1bff05c18ef0ac0cbc29fb  config-postmarketos-qcom-msm8974.armv7
 8ebd36f69eb3c97d1163b6102fbd067b748c518f6863d34e5e5cbf7090e1bca0a7de37df5d176868f0c9670c31b72e268a887b4c12f55792649368a5905886d5  0001-dt-bindings-drm-panel-simple-add-samsung-s6e3fa2-pan.patch
-33b4a56bdcbc96c4c18c05f371be595e9058d4aea07d19f47e12f8cdb3db8d0c1ff5580efced0101fa7c47a2d36c9061f6bdd58f605c7eff44660e0cb8bff18f  0002-drm-panel-simple-add-samsung-s6e3fa2-panel.patch
+6a9a55520a34294a314053d4d99c2a9afd95ca3ab07c972b4c8ba00d629b9994c79951a7b2da5019dcce82dea3d62c0776324941ac31fa1d5bcdf2edbe35ff45  0002-drm-panel-simple-add-samsung-s6e3fa2-panel.patch
 047f800d9bc5b649c8a2c813c70ea38782ed4c599105d6e970a9bb905370ec5978a706f2ad1786fedd2b2cfa22ceba20c5f6b5571674a3dbf539c27526e775e1  0003-ARM-dts-qcom-msm8974-klte-add-support-for-display.patch
 4507aed8b45cca89653daa2d0376169c0dc58bbb156dc3ebe2648d7eb358b72818660a0c9d52b162d619e6310a5a229de80150ba88e4aebc02481947298a48f1  0004-ARM-dts-qcom-msm8974-klte-add-support-for-GPU.patch"

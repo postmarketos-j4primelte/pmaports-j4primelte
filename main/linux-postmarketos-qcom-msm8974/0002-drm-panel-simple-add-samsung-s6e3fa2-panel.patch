@@ -38,7 +38,7 @@ index e14c14ac62b5..31bf1a71dd47 100644
 +			.height = 115,
 +		},
 +	},
-+	.flags = 0,
++	.flags = MIPI_DSI_MODE_VIDEO_BURST,
 +	.format = MIPI_DSI_FMT_RGB888,
 +	.lanes = 4,
 +};
