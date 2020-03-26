@@ -1,0 +1,24 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=nemo-qml-plugin-thumbnailer
+pkgver=1.0.1.1
+pkgrel=0
+pkgdesc="Nemo QML thumbnailer plugin"
+url="https://git.sailfishos.org/mer-core/nemo-qml-plugin-thumbnailer"
+arch="all"
+license="BSD-3-Clause"
+depends_dev="qt5-qtbase-dev qt5-qtdeclarative-dev"
+makedepends="$depends_dev"
+subpackages="$pkgname-dev"
+source="https://git.sailfishos.org/mer-core/nemo-qml-plugin-thumbnailer/-/archive/$pkgver/nemo-qml-plugin-thumbnailer-$pkgver.tar.gz"
+
+build() {
+	qmake-qt5
+	make
+}
+
+package() {
+	INSTALL_ROOT="$pkgdir" make install
+}
+
+sha512sums="f3d3932bbece55b5c495f6d32ac89ef2506a63be06201d268eb43116069c2c3d05776e8d23cf82b1e3f0e164c16110bc2af41c51f27d12c3b0e2802b44b1cd2c  nemo-qml-plugin-thumbnailer-1.0.1.1.tar.gz"
