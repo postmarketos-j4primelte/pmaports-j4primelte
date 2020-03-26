@@ -1,0 +1,22 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=nemo-qml-plugin-settings
+pkgver=0.0.1
+pkgrel=0
+pkgdesc="Nemomobile QML wrapper for QSettings class"
+url="https://github.com/nemomobile-ux/nemo-qml-plugin-settings"
+arch="all"
+license="LGPL-2.0-or-later"
+makedepends="qt5-qtbase-dev qt5-qtdeclarative-dev"
+source="https://github.com/nemomobile-ux/nemo-qml-plugin-settings/archive/$pkgver/nemo-qml-plugin-settings-$pkgver.tar.gz"
+
+build() {
+	qmake-qt5
+	make
+}
+
+package() {
+	INSTALL_ROOT="$pkgdir" make install
+}
+
+sha512sums="e74b4accdf820c6db8ce47e24f85227293c427e96f60130f6d14eb65be4f3e9e8a83816b73a621d9fc16fc3238aed1adcce1a1dc29beccc9eb51b2581b72d5b7  nemo-qml-plugin-settings-0.0.1.tar.gz"
