@@ -1,0 +1,33 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=glacier-settings
+pkgver=0.0.8_git20200406
+pkgrel=0
+_commit="e03ee857efd49bc917cb42fc9934fee68f305959"
+pkgdesc="The Glacier settings application"
+url="https://github.com/nemomobile-ux/glacier-settings"
+arch="all"
+license="LGPL-2.0-or-later"
+depends="nemo-qml-plugin-systemsettings nemo-qml-plugin-settings nemo-qml-plugin-dbus qtquickcontrols-nemo mapplauncherd bluez-qt qt5-qtlocation"
+makedepends="cmake qt5-qtbase-dev qt5-qtdeclarative-dev qt5-qtlocation-dev libglacierapp-dev qt5-qttools-dev"
+source="https://github.com/nemomobile-ux/glacier-settings/archive/$_commit/glacier-settings-$_commit.tar.gz
+	cmake-support.patch
+	fix-qml-import.patch
+	"
+options="!check" # No tests
+builddir="$srcdir/$pkgname-$_commit"
+
+build() {
+	cmake -B build \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr
+	make -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" make -C build install
+}
+
+sha512sums="52f000279e1fa9ea714dbf9aca9f7c60f2d17f1952e1982549d1d770712296606b85309f97859a2b1f3ea5e21d2b323e37a3834ad4cf10bd5dc8224f6cbca304  glacier-settings-e03ee857efd49bc917cb42fc9934fee68f305959.tar.gz
+5662d9caffdb12b8088c952cf0c637e1f8984b26c42b18964b95cc6b0d5c112753be97bba56a50c30b3486d8aba2acfbdef817a43805b08917f5a5dfa604c2dd  cmake-support.patch
+42b524da882f06dce8cacc486e4b0a2181a12a986d2b2a84d34fe367abe48594a83fe96c1b01fa4f0a4b9e9b9e64c444311d8c090e2c5942ab343c106a9132f7  fix-qml-import.patch"

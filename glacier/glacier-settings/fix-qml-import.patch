@@ -1,0 +1,11 @@
+diff --git a/qml/components/SettingsService.qml b/qml/components/SettingsService.qml
+index c023e23..9f9ebba 100644
+--- a/src/qml/components/SettingsService.qml
++++ b/src/qml/components/SettingsService.qml
+@@ -1,5 +1,5 @@
+ import QtQuick 2.6
+-import org.nemomobile.dbus 2.0
++import Nemo.DBus 2.0
+ 
+ Item {
+     id: rootObject
