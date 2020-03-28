@@ -121,6 +121,27 @@ BINARIES_EXTRA="
 	/usr/sbin/resize2fs
 	/usr/sbin/thd
 "
+
+resolv_links() {
+	local resolv_links="$1"
+	local oldpwd="$(pwd -P)"
+	[ -e "${resolv_links}" ] && echo "${resolv_links}"
+	cd "${resolv_links%/*}" 2>/dev/null
+	while [ -L "$resolv_links" ]; do
+		resolv_links=$(readlink "$resolv_links")
+		case "$resolv_links" in
+		/*)	resolv_links="/${resolv_links#/}"
+			cd "${resolv_links%/*}" 2>/dev/null
+			;;
+		*/*)	cd "${resolv_links%/*}" 2>/dev/null
+			;;
+		esac
+		resolv_links="$(pwd -P)/${resolv_links##*/}"
+		[ -e "${resolv_links}" ] && echo "${resolv_links}"
+	done
+	cd "$oldpwd"
+}
+
 get_binaries()
 {
 	for file in "/etc/postmarketos-mkinitfs/files"/*.files; do
@@ -129,7 +150,12 @@ get_binaries()
 			BINARIES="${BINARIES} ${line}"
 		done < "$file"
 	done
-	lddtree -l $BINARIES | sort -u
+	tmp=$(mktemp /tmp/mkinitfs.XXXXXX)
+	for file in $(lddtree-pax -l $BINARIES); do
+		resolv_links "$file" >> "$tmp"
+	done
+	sort -u "$tmp"
+	rm "$tmp"
 }
 
 # Collect non-binary files for osk-sdl and its dependencies
@@ -156,14 +182,16 @@ get_binaries_extra()
 	tmp1=$(mktemp /tmp/mkinitfs.XXXXXX)
 	get_binaries > "$tmp1"
 	tmp2=$(mktemp /tmp/mkinitfs.XXXXXX)
-	lddtree -l $BINARIES_EXTRA | sort -u > "$tmp2"
+	for file in $(lddtree-pax -l $BINARIES_EXTRA); do
+		resolv_links "$file" >> "$tmp2"
+	done
+	sort -u -o "$tmp2" "$tmp2"
 	ret=$(comm -13 "$tmp1" "$tmp2")
 	rm "$tmp1" "$tmp2"
 	echo "${ret}"
 }
 
 # Copy files to the destination specified
-# FIXME: this is a performance bottleneck
 # $1: files
 # $2: destination
 copy_files()
