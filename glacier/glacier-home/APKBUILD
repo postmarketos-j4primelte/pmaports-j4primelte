@@ -1,0 +1,33 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=glacier-home
+pkgver=0.27.8_git20200426
+pkgrel=0
+_commit="559d59550ae96bf6446a67a8c0802c7fac275e53" # devel branch
+pkgdesc="The Glacier homescreen"
+url="https://github.com/nemomobile-ux/glacier-home"
+arch="all"
+license="BSD-3-Clause AND MIT"
+depends="qt5-qtgraphicaleffects qt5-qtmultimedia qt5-qtfeedback qtmpris qtquickcontrols-nemo nemo-qml-plugin-configuration nemo-qml-plugin-statusnotifier nemo-qml-plugin-time connman libqofonoext nemo-qml-plugin-contacts nemo-qml-plugin-notifications"
+makedepends="extra-cmake-modules qt5-qtbase-dev qt5-qtdeclarative-dev qt5-qtwayland-dev qt5-qttools-dev bluez-qt-dev nemo-qml-plugin-devicelock-dev lipstick"
+source="https://github.com/nemomobile-ux/glacier-home/archive/$_commit/glacier-home-$_commit.tar.gz
+	fix-compilation-errors.patch
+	"
+options="!check" # No tests
+builddir="$srcdir/$pkgname-$_commit"
+
+build() {
+	cmake -B build \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DCMAKE_INSTALL_SYSCONFDIR=/etc
+	make -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" make -C build install
+}
+
+sha512sums="1c19ce45138418b42421edc596e60b2223123d1c414265478745d3fa11069a882595a07829a8ee4b4d5cf410f28565413c075c6e17ee70ad8979580d3e2faa5a  glacier-home-559d59550ae96bf6446a67a8c0802c7fac275e53.tar.gz
+ccb20b8afb2604c86cd61d2e2ea6e31d273960b311c444440a902dd85155190173862101c0294730fee193365dc8c963bb1ec88b5a178bb5c633acfcad686ac8  fix-compilation-errors.patch"
