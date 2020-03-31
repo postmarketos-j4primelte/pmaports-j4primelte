@@ -1,0 +1,27 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=mapplauncherd-qt
+pkgver=1.1.14
+_pkgver=$pkgver-2
+pkgrel=0
+pkgdesc="Qt booster for mapplauncherd"
+url="https://git.sailfishos.org/mer-core/mapplauncherd-qt"
+arch="all"
+license="LGPL-2.0-only"
+depends_dev="qt5-qtbase-dev qt5-qtdeclarative-dev mapplauncherd-dev libxml2-dev"
+makedepends="$depends_dev"
+subpackages="$pkgname-dev"
+source="https://git.sailfishos.org/mer-core/mapplauncherd-qt/-/archive/$_pkgver/mapplauncherd-qt-$_pkgver.tar.gz"
+options="!check" # No tests
+builddir="$srcdir/$pkgname-$_pkgver"
+
+build() {
+	qmake-qt5
+	make
+}
+
+package() {
+	INSTALL_ROOT="$pkgdir" make install
+}
+
+sha512sums="75e36e6ebdbd4f2284ead373d89a090ba4349ba45d3f694379bdf4eea7c6f9b8a1b5e58d7676fa71e16458e185a986910ecf33c99d09e37000778f88265f4fc9  mapplauncherd-qt-1.1.14-2.tar.gz"
