@@ -1,0 +1,39 @@
+# Forked from Alpine to fix the poweroff menu not appearing
+pkgname=powerdevil
+pkgver=5.18.80
+_pkgver=5.18.4
+pkgrel=0
+pkgdesc="Manages the power consumption settings of a Plasma Shell"
+arch="all !armhf" # armhf blocked by extra-cmake-modules
+url="https://www.kde.org/workspaces/plasmadesktop/"
+license="GPL-2.0-or-later AND LGPL-2.0-or-later AND (LGPL-2.1-only OR LGPL-3.0-only)"
+depends="upower"
+depends_dev="qt5-qtbase-dev qt5-qtx11extras-dev kactivities-dev kauth-dev kidletime-dev kconfig-dev kdbusaddons-dev solid-dev ki18n-dev kglobalaccel-dev kio-dev knotifyconfig-dev kwayland-dev kcrash-dev knotifications-dev libkscreen-dev plasma-workspace-dev bluez-qt-dev networkmanager-qt-dev eudev-dev"
+makedepends="$depends_dev extra-cmake-modules kdoctools-dev"
+source="https://download.kde.org/stable/plasma/$_pkgver/powerdevil-$_pkgver.1.tar.xz
+	D28491.patch
+	D27193.patch
+	"
+subpackages="$pkgname-dev $pkgname-libs $pkgname-doc $pkgname-lang"
+builddir="$srcdir/$pkgname-$_pkgver.1"
+
+build() {
+	cmake -B build \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	make -C build
+}
+
+check() {
+	cd build
+	CTEST_OUTPUT_ON_FAILURE=TRUE ctest
+}
+
+package() {
+	DESTDIR="$pkgdir" make -C build install
+}
+
+sha512sums="b7985f30965cc445cd4426ca9978a721174a3b0c371d69e044cb36edee080a99b3993ad553461e9212158f13a730210a687be2bc1f205722591307cbe87f4c20  powerdevil-5.18.4.1.tar.xz
+d958b9033e0ffe568003664c38f3aaa2ee3abe36ae8465f0f277ef060cd70ac7aea84cce31161eb9e773118a088bc15dce56ba9a55d95c0a29b194e96c4a2911  D28491.patch
+078cd8e2bdfce966cb2071ca45185c82b1c027184a90469918b03d0a795f211d91158b581f8afa228c01672c459a8058f03b1b775cd8fcbaa77de9f026590f08  D27193.patch"

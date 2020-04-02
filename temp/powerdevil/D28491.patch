@@ -1,0 +1,33 @@
+diff --git a/daemon/actions/bundled/handlebuttonevents.h b/daemon/actions/bundled/handlebuttonevents.h
+--- a/daemon/actions/bundled/handlebuttonevents.h
++++ b/daemon/actions/bundled/handlebuttonevents.h
+@@ -76,6 +76,7 @@
+     bool m_externalMonitorPresent = false;
+ 
+     uint m_powerButtonAction = 0;
++    uint m_powerDownButtonAction = 0;
+     uint m_sleepButtonAction = 1;
+     uint m_hibernateButtonAction = 2;
+ };
+diff --git a/daemon/actions/bundled/handlebuttonevents.cpp b/daemon/actions/bundled/handlebuttonevents.cpp
+--- a/daemon/actions/bundled/handlebuttonevents.cpp
++++ b/daemon/actions/bundled/handlebuttonevents.cpp
+@@ -138,6 +138,9 @@
+         case BackendInterface::PowerButton:
+             processAction(m_powerButtonAction);
+             break;
++        case BackendInterface::PowerDownButton:
++            processAction(m_powerDownButtonAction);
++            break;
+         case BackendInterface::SleepButton:
+             processAction(m_sleepButtonAction);
+             break;
+@@ -194,6 +197,7 @@
+     m_lidAction = config.readEntry<uint>("lidAction", 0);
+     m_triggerLidActionWhenExternalMonitorPresent = config.readEntry<bool>("triggerLidActionWhenExternalMonitorPresent", false);
+     m_powerButtonAction = config.readEntry<uint>("powerButtonAction", 0);
++    m_powerDownButtonAction = config.readEntry<uint>("powerDownAction", 0);
+ 
+     checkOutputs();
+ 
+

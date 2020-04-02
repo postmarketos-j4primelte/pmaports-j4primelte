@@ -1,0 +1,133 @@
+diff --git a/daemon/actions/bundled/handlebuttonevents.h b/daemon/actions/bundled/handlebuttonevents.h
+--- a/daemon/actions/bundled/handlebuttonevents.h
++++ b/daemon/actions/bundled/handlebuttonevents.h
+@@ -60,6 +60,7 @@
+ private Q_SLOTS:
+     void onButtonPressed(PowerDevil::BackendInterface::ButtonType type);
+     void powerOffButtonTriggered();
++    void powerDownButtonTriggered();
+     void suspendToRam();
+     void suspendToDisk();
+ 
+diff --git a/daemon/actions/bundled/handlebuttonevents.cpp b/daemon/actions/bundled/handlebuttonevents.cpp
+--- a/daemon/actions/bundled/handlebuttonevents.cpp
++++ b/daemon/actions/bundled/handlebuttonevents.cpp
+@@ -73,6 +73,11 @@
+     accel->setGlobalShortcut(globalAction, Qt::Key_PowerOff);
+     connect(globalAction, SIGNAL(triggered(bool)), SLOT(powerOffButtonTriggered()));
+ 
++    globalAction = actionCollection->addAction("PowerDown");
++    globalAction->setText(i18nc("@action:inmenu Global shortcut", "Power Down"));
++    accel->setGlobalShortcut(globalAction, Qt::Key_PowerDown);
++    connect(globalAction, &QAction::triggered, this, &HandleButtonEvents::powerDownButtonTriggered);
++
+     connect(new KScreen::GetConfigOperation(KScreen::GetConfigOperation::NoEDID), &KScreen::ConfigOperation::finished,
+             this, [this](KScreen::ConfigOperation *op) {
+                 m_screenConfiguration = qobject_cast<KScreen::GetConfigOperation *>(op)->config();
+@@ -210,6 +215,11 @@
+     onButtonPressed(BackendInterface::PowerButton);
+ }
+ 
++void HandleButtonEvents::powerDownButtonTriggered()
++{
++    onButtonPressed(BackendInterface::PowerDownButton);
++}
++
+ void HandleButtonEvents::suspendToDisk()
+ {
+     onButtonPressed(BackendInterface::HibernateButton);
+diff --git a/daemon/powerdevilbackendinterface.h b/daemon/powerdevilbackendinterface.h
+--- a/daemon/powerdevilbackendinterface.h
++++ b/daemon/powerdevilbackendinterface.h
+@@ -65,12 +65,13 @@
+      * This enum type defines the types of system button events.
+      *
+      * - UnknownButtonType: An unknown button
++     * - PowerDown: A power down pressed event, generally used to turn on or off the system. KWin emits on long power button presses.
+      * - PowerButton: A power button pressed event, generally used to turn on or off the system
+      * - SleepButton: A sleep button pressed event, generally used to make the system asleep
+      * - LidOpen: A laptop lid open event
+      * - LidClose: A laptop lid close event
+      */
+-    enum ButtonType{ UnknownButtonType, PowerButton, SleepButton, LidOpen, LidClose, HibernateButton };
++    enum ButtonType{ UnknownButtonType, PowerButton, PowerDownButton, SleepButton, LidOpen, LidClose, HibernateButton };
+     Q_ENUM(ButtonType)
+ 
+     /**
+diff --git a/daemon/powerdevilprofilegenerator.cpp b/daemon/powerdevilprofilegenerator.cpp
+--- a/daemon/powerdevilprofilegenerator.cpp
++++ b/daemon/powerdevilprofilegenerator.cpp
+@@ -58,26 +58,29 @@
+     KConfigGroup acProfile(profilesConfig, "AC");
+     acProfile.writeEntry("icon", "battery-charging");
+ 
+-    const bool mobile = !qEnvironmentVariableIsEmpty("QT_QUICK_CONTROLS_MOBILE");
+-    const Modes defaultPowerButtonAction = mobile ? LockScreenMode : LogoutDialogMode;
+-
+     // We want to dim the screen after a while, definitely
+     {
+         KConfigGroup dimDisplay(&acProfile, "DimDisplay");
+         dimDisplay.writeEntry< int >("idleTime", 300000);
+     }
+-    // Show the dialog when power button is pressed and suspend on suspend button pressed and lid closed (if supported)
++
++    auto initLid = [toRam](KConfigGroup &profile)
+     {
+-        KConfigGroup handleButtonEvents(&acProfile, "HandleButtonEvents");
++        const bool mobile = !qEnvironmentVariableIsEmpty("QT_QUICK_CONTROLS_MOBILE");
++        const Modes defaultPowerButtonAction = mobile ? ToRamMode : LogoutDialogMode;
+ 
++        KConfigGroup handleButtonEvents(&profile, "HandleButtonEvents");
+         handleButtonEvents.writeEntry< uint >("powerButtonAction", defaultPowerButtonAction);
+-
++        handleButtonEvents.writeEntry< uint >("powerDownAction", LogoutDialogMode);
+         if (toRam) {
+             handleButtonEvents.writeEntry< uint >("lidAction", ToRamMode);
+         } else {
+             handleButtonEvents.writeEntry< uint >("lidAction", TurnOffScreenMode);
+         }
+-    }
++    };
++
++    // Show the dialog when power button is pressed and suspend on suspend button pressed and lid closed (if supported)
++    initLid(acProfile);
+ 
+     // And we also want to turn off the screen after another while
+     {
+@@ -94,15 +97,8 @@
+         dimDisplay.writeEntry< int >("idleTime", 120000);
+     }
+     // Show the dialog when power button is pressed and suspend on suspend button pressed and lid closed (if supported)
+-    {
+-        KConfigGroup handleButtonEvents(&batteryProfile, "HandleButtonEvents");
+-        handleButtonEvents.writeEntry< uint >("powerButtonAction", defaultPowerButtonAction);
+-        if (toRam) {
+-            handleButtonEvents.writeEntry< uint >("lidAction", ToRamMode);
+-        } else {
+-            handleButtonEvents.writeEntry< uint >("lidAction", TurnOffScreenMode);
+-        }
+-    }
++    initLid(batteryProfile);
++
+     // We want to turn off the screen after another while
+     {
+         KConfigGroup dpmsControl(&batteryProfile, "DPMSControl");
+@@ -130,15 +126,8 @@
+         dimDisplay.writeEntry< int >("idleTime", 60000);
+     }
+     // Show the dialog when power button is pressed and suspend on suspend button pressed and lid closed (if supported)
+-    {
+-        KConfigGroup handleButtonEvents(&lowBatteryProfile, "HandleButtonEvents");
+-        handleButtonEvents.writeEntry< uint >("powerButtonAction", defaultPowerButtonAction);
+-        if (toRam) {
+-            handleButtonEvents.writeEntry< uint >("lidAction", ToRamMode);
+-        } else {
+-            handleButtonEvents.writeEntry< uint >("lidAction", TurnOffScreenMode);
+-        }
+-    }
++    initLid(lowBatteryProfile);
++
+     // We want to turn off the screen after another while
+     {
+         KConfigGroup dpmsControl(&lowBatteryProfile, "DPMSControl");
+
