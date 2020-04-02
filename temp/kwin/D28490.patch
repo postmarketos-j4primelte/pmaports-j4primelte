@@ -1,0 +1,52 @@
+diff --git a/input.cpp b/input.cpp
+index 27d1e926d..442509b06 100644
+--- a/input.cpp
++++ b/input.cpp
+@@ -733,6 +733,15 @@ private:
+ 
+ class GlobalShortcutFilter : public InputEventFilter {
+ public:
++    GlobalShortcutFilter() {
++        m_powerDown = new QTimer;
++        m_powerDown->setSingleShot(true);
++        m_powerDown->setInterval(1000);
++    }
++    ~GlobalShortcutFilter() {
++        delete m_powerDown;
++    }
++
+     bool pointerEvent(QMouseEvent *event, quint32 nativeButton) override {
+         Q_UNUSED(nativeButton);
+         if (event->type() == QEvent::MouseButtonPress) {
+@@ -759,8 +768,19 @@ public:
+         return input()->shortcuts()->processAxis(event->modifiers(), direction);
+     }
+     bool keyEvent(QKeyEvent *event) override {
+-        if (event->type() == QEvent::KeyPress) {
+-            return input()->shortcuts()->processKey(static_cast<KeyEvent*>(event)->modifiersRelevantForGlobalShortcuts(), event->key());
++	const auto modifiers = static_cast<KeyEvent*>(event)->modifiersRelevantForGlobalShortcuts();
++        if (event->type() == QEvent::KeyPress && !event->isAutoRepeat()) {
++           QObject::connect(m_powerDown, &QTimer::timeout, input()->shortcuts(), [this, modifiers] {
++               QObject::disconnect(m_powerDown, &QTimer::timeout, input()->shortcuts(), nullptr);
++               m_powerDown->stop();
++               input()->shortcuts()->processKey(modifiers, Qt::Key_PowerDown);
++           });
++           m_powerDown->start();
++           return true;
++        } else if (event->type() == QEvent::KeyRelease) {
++           const bool ret = !m_powerDown->isActive() || input()->shortcuts()->processKey(modifiers, event->key());
++           m_powerDown->stop();
++           return ret;
+         }
+         return false;
+     }
+@@ -784,6 +804,9 @@ public:
+         input()->shortcuts()->processSwipeEnd();
+         return false;
+     }
++
++private:
++    QTimer* m_powerDown = nullptr;
+ };
+ 
+ 
