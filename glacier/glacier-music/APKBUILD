@@ -1,0 +1,31 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=glacier-music
+pkgver=0.2.2_git20200120
+pkgrel=0
+_commit="3765f3d1f2f346598198259a53c764c0a7ed96f1"
+pkgdesc="The Glacier music player"
+url="https://github.com/nemomobile-ux/glacier-music"
+arch="all"
+license="LGPL-2.0-or-later"
+depends="nemo-qml-plugin-settings qtquickcontrols-nemo mapplauncherd"
+makedepends="cmake qt5-qtbase-dev qt5-qtdeclarative-dev qt5-qtmultimedia-dev libglacierapp-dev taglib-dev"
+source="https://github.com/nemomobile-ux/glacier-music/archive/$_commit/glacier-settings-$_commit.tar.gz
+	cmake-support.patch
+	"
+options="!check" # No tests
+builddir="$srcdir/$pkgname-$_commit"
+
+build() {
+	cmake -B build \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr
+	make -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" make -C build install
+}
+
+sha512sums="2faeaa7b10907bdde251c410eeb584fd225e983545548368f210eb8f2fdbda76b33cc7323c06a3f15d45014b6bf5a07429502d51cf00cba46396a006560c22fc  glacier-settings-3765f3d1f2f346598198259a53c764c0a7ed96f1.tar.gz
+e671392699390e4a63eee8e0aa6f1001fb17c2610586a8021524213036ac8bca743b7f4d9f01fd617a27211ae3534ee116dea8fa657b40c6ef4998cdb0979958  cmake-support.patch"

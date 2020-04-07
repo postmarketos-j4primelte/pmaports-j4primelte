@@ -1,0 +1,255 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+new file mode 100644
+index 0000000..544cfc1
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -0,0 +1,34 @@
++cmake_minimum_required(VERSION 3.1.0)
++
++project(glacier-music
++	VERSION 0.2.0
++	DESCRIPTION "The Glacier music player")
++
++set(CMAKE_AUTOMOC ON)
++set(CMAKE_AUTORCC ON)
++
++set(CMAKE_INCLUDE_CURRENT_DIR ON)
++
++include(FindPkgConfig)
++include(FeatureSummary)
++include(GNUInstallDirs)
++
++set(QT_MIN_VERSION "5.6.0")
++find_package(Qt5 COMPONENTS Qml Quick Multimedia Sql REQUIRED)
++find_package(Glacier COMPONENTS App REQUIRED)
++find_package(PkgConfig REQUIRED)
++
++pkg_check_modules(TAGLIB taglib REQUIRED IMPORTED_TARGET)
++if(TAGLIB_FOUND)
++	set_property(GLOBAL APPEND PROPERTY PACKAGES_FOUND taglib)
++endif()
++
++add_subdirectory(src)
++
++
++install(DIRECTORY images
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/glacier-music/)
++install(FILES ${PROJECT_NAME}.desktop
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications/)
++
++feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
+diff --git a/glacier-music.pro b/glacier-music.pro
+deleted file mode 100644
+index 4efc0d5..0000000
+--- a/glacier-music.pro
++++ /dev/null
+@@ -1,66 +0,0 @@
+-TEMPLATE = app
+-TARGET = glacier-music
+-
+-QT += qml quick sql multimedia
+-
+-LIBS += -ltag -lglacierapp
+-
+-SOURCES += main.cpp \
+-    src/collection.cpp \
+-    src/dbadapter.cpp \
+-    src/rescancollection.cpp \
+-    src/audiofile.cpp \
+-    src/artist.cpp \
+-    src/track.cpp \
+-    src/models/artistsqlmodel.cpp \
+-    src/models/tracksqlmodel.cpp \
+-    src/models/playlistmodel.cpp \
+-    src/musicbrainzconnect.cpp \
+-    src/cover.cpp \
+-    src/downloader.cpp
+-
+-target.path = /usr/bin
+-
+-qml.files = qml/*
+-qml.path = /usr/share/glacier-music/qml
+-
+-images.files = images/*
+-images.path = /usr/share/glacier-music/images/
+-
+-desktop.files = glacier-music.desktop
+-desktop.path = /usr/share/applications
+-
+-INSTALLS += target desktop qml images
+-
+-DISTFILES += \
+-    rpm/glacier-music.spec \
+-    glacier-music.desktop \
+-    qml/glacier-music.qml \
+-    qml/pages/PlayerPage.qml \
+-    qml/pages/SettingsPage.qml \
+-    qml/components/CoverArea.qml \
+-    qml/components/PlaylistItem.qml \
+-    qml/pages/LibraryPage.qml \
+-    qml/pages/PlayListPage.qml \
+-    qml/pages/ArtistsPage.qml \
+-    qml/pages/TracksPage.qml \
+-    qml/components/ControlsArea.qml \
+-    images/cover.png
+-
+-HEADERS += \
+-    src/collection.h \
+-    src/dbadapter.h \
+-    src/rescancollection.h \
+-    src/audiofile.h \
+-    src/item.h \
+-    src/artist.h \
+-    src/track.h \
+-    src/models/artistsqlmodel.h \
+-    src/models/tracksqlmodel.h \
+-    src/models/playlistmodel.h \
+-    src/musicbrainzconnect.h \
+-    src/cover.h \
+-    src/downloader.h
+-
+-CONFIG += link_pkgconfig
+-PKGCONFIG += taglib glacierapp
+diff --git a/rpm/glacier-music.spec b/rpm/glacier-music.spec
+index cf895c4..a35753d 100644
+--- a/rpm/glacier-music.spec
++++ b/rpm/glacier-music.spec
+@@ -19,6 +19,7 @@ Requires:   libglacierapp
+ Requires:   mapplauncherd-booster-nemomobile
+ Requires:   qt5-qtmultimedia-plugin-mediaservice-gstmediaplayer
+ 
++BuildRequires:  cmake
+ BuildRequires:  pkgconfig(taglib) >= 1.11.1
+ BuildRequires:  pkgconfig(Qt5Core)
+ BuildRequires:  pkgconfig(Qt5Qml)
+@@ -34,13 +35,15 @@ Music application for nemo mobile
+ %setup -q -n %{name}-%{version}
+ 
+ %build
+-%qtc_qmake5  VERSION=%{version}
+-
+-make %{?_smp_mflags}
++cmake -B build \
++	-DCMAKE_BUILD_TYPE=Release \
++	-DCMAKE_INSTALL_PREFIX=%{_prefix} \
++	-DCMAKE_INSTALL_LIBDIR=%{_lib}
++make -C build VERBOSE=1
+ 
+ %install
+ rm -rf %{buildroot}
+-%qmake5_install
++make -C build install DESTDIR=$RPM_BUILD_ROOT
+ 
+ desktop-file-install --delete-original       \
+   --dir %{buildroot}%{_datadir}/applications             \
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+new file mode 100644
+index 0000000..801226f
+--- /dev/null
++++ b/src/CMakeLists.txt
+@@ -0,0 +1,41 @@
++set(SRC
++	artist.cpp
++	artist.h
++	audiofile.cpp
++	audiofile.h
++	collection.cpp
++	collection.h
++	cover.cpp
++	cover.h
++	dbadapter.cpp
++	dbadapter.h
++	downloader.cpp
++	downloader.h
++	item.h
++	main.cpp
++	musicbrainzconnect.cpp
++	musicbrainzconnect.h
++	rescancollection.cpp
++	rescancollection.h
++	track.cpp
++	track.h
++	models/artistsqlmodel.cpp
++	models/artistsqlmodel.h
++	models/playlistmodel.cpp
++	models/playlistmodel.h
++	models/tracksqlmodel.cpp
++	models/tracksqlmodel.h)
++
++add_executable(glacier-music ${SRC})
++
++target_link_libraries(glacier-music
++	Qt5::Qml
++	Qt5::Quick
++	Qt5::Multimedia
++	Qt5::Sql
++	Glacier::App
++	PkgConfig::TAGLIB)
++install(TARGETS glacier-music RUNTIME
++	DESTINATION ${CMAKE_INSTALL_BINDIR})
++install(DIRECTORY qml
++	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/glacier-music/)
+diff --git a/main.cpp b/src/main.cpp
+similarity index 91%
+rename from main.cpp
+rename to src/main.cpp
+index f234c87..4251e1d 100644
+--- a/main.cpp
++++ b/src/main.cpp
+@@ -30,11 +30,11 @@
+ 
+ #include <glacierapp.h>
+ 
+-#include "src/collection.h"
+-#include "src/cover.h"
+-#include "src/models/artistsqlmodel.h"
+-#include "src/models/tracksqlmodel.h"
+-#include "src/models/playlistmodel.h"
++#include "collection.h"
++#include "cover.h"
++#include "models/artistsqlmodel.h"
++#include "models/tracksqlmodel.h"
++#include "models/playlistmodel.h"
+ 
+ Q_DECL_EXPORT int main(int argc, char *argv[])
+ {
+diff --git a/qml/components/ControlsArea.qml b/src/qml/components/ControlsArea.qml
+similarity index 100%
+rename from qml/components/ControlsArea.qml
+rename to src/qml/components/ControlsArea.qml
+diff --git a/qml/components/CoverArea.qml b/src/qml/components/CoverArea.qml
+similarity index 100%
+rename from qml/components/CoverArea.qml
+rename to src/qml/components/CoverArea.qml
+diff --git a/qml/components/PlaylistItem.qml b/src/qml/components/PlaylistItem.qml
+similarity index 100%
+rename from qml/components/PlaylistItem.qml
+rename to src/qml/components/PlaylistItem.qml
+diff --git a/qml/glacier-music.qml b/src/qml/glacier-music.qml
+similarity index 100%
+rename from qml/glacier-music.qml
+rename to src/qml/glacier-music.qml
+diff --git a/qml/pages/ArtistsPage.qml b/src/qml/pages/ArtistsPage.qml
+similarity index 100%
+rename from qml/pages/ArtistsPage.qml
+rename to src/qml/pages/ArtistsPage.qml
+diff --git a/qml/pages/LibraryPage.qml b/src/qml/pages/LibraryPage.qml
+similarity index 100%
+rename from qml/pages/LibraryPage.qml
+rename to src/qml/pages/LibraryPage.qml
+diff --git a/qml/pages/PlayListPage.qml b/src/qml/pages/PlayListPage.qml
+similarity index 100%
+rename from qml/pages/PlayListPage.qml
+rename to src/qml/pages/PlayListPage.qml
+diff --git a/qml/pages/PlayerPage.qml b/src/qml/pages/PlayerPage.qml
+similarity index 100%
+rename from qml/pages/PlayerPage.qml
+rename to src/qml/pages/PlayerPage.qml
+diff --git a/qml/pages/SettingsPage.qml b/src/qml/pages/SettingsPage.qml
+similarity index 100%
+rename from qml/pages/SettingsPage.qml
+rename to src/qml/pages/SettingsPage.qml
+diff --git a/qml/pages/TracksPage.qml b/src/qml/pages/TracksPage.qml
+similarity index 100%
+rename from qml/pages/TracksPage.qml
+rename to src/qml/pages/TracksPage.qml
