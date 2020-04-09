@@ -1,0 +1,24 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=libqofonoext
+pkgver=1.0.25
+pkgrel=0
+pkgdesc="C++ API for Jolla ofono extensions"
+url="https://git.sailfishos.org/mer-core/libqofonoext"
+arch="all"
+license="LGPL-2.1-only"
+depends_dev="qt5-qtbase-dev qt5-qtdeclarative-dev libqofono-dev"
+makedepends="$depends_dev"
+subpackages="$pkgname-dev"
+source="https://git.sailfishos.org/mer-core/libqofonoext/-/archive/$pkgver/libqofonoext-$pkgver.tar.gz"
+
+build() {
+	qmake-qt5
+	make
+}
+
+package() {
+	INSTALL_ROOT="$pkgdir" make install
+}
+
+sha512sums="20d5477d172d39260df57d0123ddf255e5c0683a26e264574908f21fbeea866dc29cdd458b9c72090960494c8f31c72c78298e16e74c77c1f20173917dfed7d7  libqofonoext-1.0.25.tar.gz"
