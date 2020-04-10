@@ -1,0 +1,36 @@
+# Forked from Alpine INSERT-REASON-HERE (CHANGEME!)
+
+pkgname=kscreen
+pkgver=5.18.80_git20200402
+_commit="85761a5140541a9674ff8daff85701324e5ea720"
+_pkgver=5.18.4.1
+pkgrel=0
+pkgdesc="KDE's screen management software"
+arch="all !armhf" # armhf blocked by qt5-qtdeclarative
+url="https://www.kde.org/workspaces/plasmadesktop/"
+license="GPL-2.0-or-later AND LGPL-2.1-or-later"
+depends="hicolor-icon-theme"
+makedepends="extra-cmake-modules qt5-qtbase-dev qt5-qtsensors-dev kdbusaddons-dev kconfig-dev kconfigwidgets-dev ki18n-dev kxmlgui-dev kglobalaccel-dev kwidgetsaddons-dev kdeclarative-dev kiconthemes-dev plasma-framework-dev libkscreen-dev kcmutils-dev"
+checkdepends="xvfb-run"
+source="$pkgname-$_commit.tar.gz::https://github.com/KDE/kscreen/archive/$_commit.tar.gz"
+builddir="$srcdir/$pkgname-$_commit"
+
+build() {
+	cmake -B build \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	make -C build
+}
+
+check() {
+	cd build
+	# kscreen-kded-configtest is broken
+	CTEST_OUTPUT_ON_FAILURE=TRUE xvfb-run ctest -E "kscreen-kded-configtest"
+}
+
+package() {
+	DESTDIR="$pkgdir" make -C build install
+}
+
+sha512sums="57252d528d17c8429e40bfa9b6dc51d7edf638b7979db1bff51420b1fc75db4d7d80fa78dd24953e736550f8799a16012817225eee46111764dd64e686a1117f  kscreen-85761a5140541a9674ff8daff85701324e5ea720.tar.gz"
