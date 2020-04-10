@@ -1,16 +1,18 @@
 # Contributor: Bart Ribbers <bribbers@disroot.org>
 # Maintainer: Luca Weiss <luca@z3ntu.xyz>
 pkgname=qt5-qtpim
-pkgver=0_git20190227
-_commit="0b4522ae19d560881fdf85e8762c0d7f28310d50"
-pkgrel=1
+pkgver=0_git20190618
+_commit="8fec622c186d254bc9750606d54c32670a9046a5"
+pkgrel=0
 arch="all"
 url='http://qt-project.org/'
 license="LGPL-2.1-only AND LGPL-3.0-only AND GPL-3.0-only AND Qt-GPL-exception-1.0"
 pkgdesc='Qt Personal Information Management'
 depends_dev="qt5-qtdeclarative-dev"
 makedepends="$depends_dev git"
-source="$pkgname-$_commit.tar.gz::https://github.com/qt/qtpim/archive/$_commit.tar.gz"
+source="https://github.com/qt/qtpim/archive/$_commit/qtpim-$_commit.tar.gz
+	0001-Patch-module-version.patch
+	"
 subpackages="$pkgname-dev $pkgname-doc"
 builddir="$srcdir/qtpim-$_commit"
 options="!check"
@@ -36,4 +38,5 @@ package() {
 	install -d "$pkgdir"/usr/share/licenses
 	ln -s /usr/share/licenses/qt5-base "$pkgdir"/usr/share/licenses/$pkgname
 }
-sha512sums="e4304c6d67b12d48321510cf6e9f5efebdf8134dc58fb4a06a1ee07a1b52c55aed1e4e99a914e2cd0fd9bf0d47c1c376fca694e88d70405cc9a7b700aba4c22d  qt5-qtpim-0b4522ae19d560881fdf85e8762c0d7f28310d50.tar.gz"
+sha512sums="26424fe7943eb22282b66fb738fa86df6e9a6728258cc3b19dfdfb96e7aeb866d218686a351d7f8beaa8f51bcab7cc00484d1fd9552f4ba79298f0a82d215d3f  qtpim-8fec622c186d254bc9750606d54c32670a9046a5.tar.gz
+6e7d43f36bbf23dedd860727259a4bf5dfad8e8548a3d4a19c974b9afed87ebb25264cc08572bdbb0f703c95ae1a5f6a7a5ca8cd742feaf46440fe7c282535d2  0001-Patch-module-version.patch"
