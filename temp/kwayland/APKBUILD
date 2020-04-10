@@ -1,0 +1,44 @@
+# Forked from Alpine INSERT-REASON-HERE (CHANGEME!)
+
+pkgname=kwayland
+pkgver=5.68.80_git20200330
+_commit="3a7f50d5f55bc70ab018d098b1725ebe03e70da2"
+pkgrel=0
+pkgdesc="Qt-style Client and Server library wrapper for the Wayland libraries"
+arch="all !armhf" # armhf blocked by extra-cmake-modules
+url="https://www.kde.org"
+license="LGPL-2.1-only OR LGPL-3.0-only"
+depends_dev="qt5-qtbase-dev wayland-dev"
+makedepends="$depends_dev extra-cmake-modules doxygen qt5-qttools-dev qt5-qtwayland-dev wayland-protocols"
+source="$pkgname-$_commit.tar.gz::https://github.com/KDE/kwayland/archive/$_commit.tar.gz"
+subpackages="$pkgname-dev $pkgname-doc"
+options="!check" # Fails due to requiring running Wayland compositor
+builddir="$srcdir/$pkgname-$_commit"
+
+prepare() {
+	default_prepare
+
+	mkdir "$builddir"/build
+}
+
+build() {
+	cd "$builddir"/build
+	cmake "$builddir" \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_QCH=ON
+	make
+}
+
+check() {
+	cd "$builddir"/build
+	CTEST_OUTPUT_ON_FAILURE=TRUE ctest
+}
+
+package() {
+	cd "$builddir"/build
+	DESTDIR="$pkgdir" make install
+}
+
+sha512sums="d181ae02eada8e1a0ffdb3d601d3d5c8169a494c3ed52d80e270936b625af4a63597154294d9a579a561ff0cac2139b83ba7fd216d31f81324e5b2e49f47fca3  kwayland-3a7f50d5f55bc70ab018d098b1725ebe03e70da2.tar.gz"
