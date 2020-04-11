@@ -1,0 +1,56 @@
+# Contributor: Daniele Debernardi <drebrez@gmail.com>
+# Maintainer: Daniele Debernardi <drebrez@gmail.com>
+# Reference: <https://postmarketos.org/vendorkernel>
+# Kernel config based on: arch/arm64/configs/exynos8895-dreamlte_defconfig
+
+pkgname="linux-samsung-dreamlte"
+pkgver=4.4.111
+pkgrel=0
+pkgdesc="Samsung Galaxy S8 kernel fork"
+arch="aarch64"
+_carch="arm64"
+_flavor="samsung-dreamlte"
+url="https://kernel.org"
+license="GPL-2.0-only"
+options="!strip !check !tracedeps"
+makedepends="bash bc bison devicepkg-dev flex openssl-dev perl dtbtool-exynos"
+
+# Source
+_repository="android_kernel_samsung_universal8895"
+_commit="198e4a6246ba3408de133610dfc33f314bff8e05"
+_config="config-$_flavor.$arch"
+source="
+	$pkgname-$_commit.tar.gz::https://github.com/corsicanu/$_repository/archive/$_commit.tar.gz
+	$_config
+	01-remove-dtbtool.patch
+"
+builddir="$srcdir/$_repository-$_commit"
+_outdir="out"
+
+prepare() {
+	[ ! -L /dev/fd ] && ln -s /proc/self/fd /dev/fd
+	default_prepare
+	. downstreamkernel_prepare
+}
+
+build() {
+	unset LDFLAGS
+	make O="$_outdir" ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-postmarketOS"
+}
+
+package() {
+	downstreamkernel_package "$builddir" "$pkgdir" "$_carch" "$_flavor" "$_outdir"
+
+	# Master DTB (deviceinfo_bootimg_qcdt)
+	dtbTool-exynos --pagesize 2048 \
+		--platform 0x50a6 \
+		--subtype  0x217584da \
+		-o "$_outdir/arch/$_carch/boot/dt.img" \
+		$(find "$_outdir/arch/$_carch/boot/dts/" -name *dreamlte*.dtb)
+	install -Dm644 "$_outdir/arch/$_carch/boot/dt.img" "$pkgdir"/boot/dt.img
+}
+
+sha512sums="4ba472d0f7b0bae25369cddd75660420cbc0d6a75bda5228b21e7edcf5029b14ddb8f96c150594b4dbdb342cbc0e0337316fb0c3d8f1f0de31ddd86753e8422b  linux-samsung-dreamlte-198e4a6246ba3408de133610dfc33f314bff8e05.tar.gz
+be61686337ba825be2bc1cef8ebf347994e447df6dc53c5e3159a4270000f6a2bd28a1685e5fa045c72b773dabc43c5f32f1a1b0f1c9fca1938570e53ece4c60  config-samsung-dreamlte.aarch64
+7bf7837520aa35d280927ca99239af1cceeff4442e38136fcde14e7eff5795059124b47d0b68f92b47b5d0be219999970721d25196442a425f8772b48278d584  01-remove-dtbtool.patch"

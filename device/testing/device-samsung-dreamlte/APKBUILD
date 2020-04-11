@@ -1,0 +1,25 @@
+# Contributor: Daniele Debernardi <drebrez@gmail.com>
+# Maintainer: Daniele Debernardi <drebrez@gmail.com>
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname="device-samsung-dreamlte"
+pkgdesc="Samsung Galaxy S8"
+pkgver=0.1
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="postmarketos-base linux-samsung-dreamlte mkbootimg mesa-dri-gallium msm-fb-refresher"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+
+sha512sums="54a430326b9ede239e85ef595a114475cf6c0a691dc1846e21b7ae754d888aecab33cefbf3c086e1ceb9f974dd6947e1e360d26e544644027184791c55dccbc0  deviceinfo"
