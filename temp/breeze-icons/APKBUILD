@@ -1,0 +1,47 @@
+# Forked from Alpine INSERT-REASON-HERE (CHANGEME!)
+
+pkgname=breeze-icons
+pkgver=5.68.80_git20200412
+_commit="169b438c9fc1fc3ef918ed45efe930a47bdfa19b"
+pkgrel=0
+pkgdesc="Breeze icon themes"
+arch="noarch !armhf" # armhf blocked by extra-cmake-modules
+url="https://community.kde.org/Frameworks"
+license="LGPL-3.0-or-later"
+makedepends="extra-cmake-modules qt5-qtbase-dev"
+checkdepends="bash"
+source="$pkgname-$_commit.tar.gz::https://github.com/KDE/breeze-icons/archive/$_commit.tar.gz
+	busybox-grep-q.patch
+	busybox-sed-i.patch
+	0001-Revert-GIT_SILENT-Upgrade-ECM-and-KF5-version-requir.patch
+	"
+builddir="$srcdir/$pkgname-$_commit"
+
+prepare() {
+	default_prepare
+
+	mkdir "$builddir"/build
+}
+
+build() {
+	cd "$builddir"/build
+	cmake "$builddir" \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DBINARY_ICONS_RESOURCE=ON
+	make
+}
+
+check() {
+	cd "$builddir"/build
+	CTEST_OUTPUT_ON_FAILURE=TRUE ctest -E '(dupe|symlink)'
+}
+
+package() {
+	cd "$builddir"/build
+	DESTDIR="$pkgdir" make install
+}
+sha512sums="f74d7d1d2a85ef6c73a77d25b1f57a76926c7837f93fd23cb7b67c7c441c415f6e741ea89cdb44a21fa38c1239831c60104eb6401b0e2e9eef6c21b4b9038b84  breeze-icons-169b438c9fc1fc3ef918ed45efe930a47bdfa19b.tar.gz
+e4ac354dbb75519d2699a2a95b6810950a22cfc2b550557426e1ab9d57f9e778fc6cda4d205626158c9fb4c30bb00fa32f1a02bbbaa021136ff660bb93926080  busybox-grep-q.patch
+146ea6635feaf05541ca82839fd315dfa10cb6daaf364cbe79f324451617d53f405c52fe5ed5a2abfe6d3e01109795afc3a385dce78b0cb0f78702d1b434a250  busybox-sed-i.patch
+f978fc3f43cd4efb3c0ad13847ccf7e383ea3f9d7c9bb69698c438b516328efc6cdf055ca00b74087feaecc538061ef17c6900f377e12cda80c4f24156680548  0001-Revert-GIT_SILENT-Upgrade-ECM-and-KF5-version-requir.patch"

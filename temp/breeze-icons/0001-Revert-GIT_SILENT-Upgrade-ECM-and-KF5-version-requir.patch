@@ -1,0 +1,27 @@
+From e6fbf146e9d8b9c743a28e367b247e6c2972f1b0 Mon Sep 17 00:00:00 2001
+From: Luca Weiss <luca@z3ntu.xyz>
+Date: Sun, 12 Apr 2020 12:09:35 +0200
+Subject: [PATCH] Revert "GIT_SILENT Upgrade ECM and KF5 version requirements
+ for 5.69.0 release."
+
+This reverts commit 5928de78916497cd8c25808b6333344156984df4.
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 00d5fa6a..60fca2ec 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -5,7 +5,7 @@ project(BreezeIcons VERSION ${KF5_VERSION})
+ 
+ # ECM setup
+ include(FeatureSummary)
+-find_package(ECM 5.69.0  NO_MODULE)
++find_package(ECM 5.68.0  NO_MODULE)
+ set_package_properties(ECM PROPERTIES TYPE REQUIRED DESCRIPTION "Extra CMake Modules." URL "https://commits.kde.org/extra-cmake-modules")
+ feature_summary(WHAT REQUIRED_PACKAGES_NOT_FOUND FATAL_ON_MISSING_REQUIRED_PACKAGES)
+ 
+-- 
+2.26.0
+
