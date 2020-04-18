@@ -43,12 +43,12 @@ subpackages=""
 [ "$CHOST" = "$CTARGET" ] && subpackages="gcc-doc$_target"
 replaces="libstdc++ binutils"
 
-: "${LANG_CXX:=true}"
-: "${LANG_D:=true}"
-: "${LANG_OBJC:=true}"
-: "${LANG_GO:=true}"
-: "${LANG_FORTRAN:=true}"
-: "${LANG_ADA:=true}"
+: "${LANG_CXX:=false}"
+: "${LANG_D:=false}"
+: "${LANG_OBJC:=false}"
+: "${LANG_GO:=false}"
+: "${LANG_FORTRAN:=false}"
+: "${LANG_ADA:=false}"
 
 _libgomp=true
 _libgcc=true
@@ -273,6 +273,7 @@ build() {
 
 	case "$CTARGET_ARCH" in
 	mips*)	_hash_style_configure="--with-linker-hash-style=sysv" ;;
+	or1k*)	echo "haha! not doing this" ;;
 	*)	_hash_style_configure="--with-linker-hash-style=gnu" ;;
 	esac
 
