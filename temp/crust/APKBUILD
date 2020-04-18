@@ -1,0 +1,22 @@
+pkgname=crust
+pkgver=0_git20200412
+pkgrel=0
+_commit="dda9582cb90b07348ec2a2e65c8295e73333f80f"
+pkgdesc="SCP firmware for sunxi SoCs"
+arch="noarch"
+url="https://github.com/crust-firmware/crust"
+license="BSD"
+makedepends="gcc-or1k binutils-or1k dtc bison"
+source="$pkgname-$_commit.tar.gz::https://github.com/crust-firmware/crust/archive/$_commit.tar.gz"
+options="!check" # No tests
+builddir="$srcdir/$pkgname-$_commit"
+
+build() {
+	make CROSS_COMPILE=or1k-elf- pinephone_defconfig
+	make CROSS_COMPILE=or1k-elf- build/scp/scp.bin
+}
+
+package() {
+	install -D -m644 "$builddir"/build/scp/scp.bin "$pkgdir"/usr/share/crust/pinephone/scp.bin
+}
+sha512sums="3f9d4c0dd5f34a64e5885e344b0629a663acf2bdf370a9fce6efe2916ae7698f57d9b0fa3332701bffff1ad38906f2291e6cbd46331facf8f4375e7aa29bf653  crust-dda9582cb90b07348ec2a2e65c8295e73333f80f.tar.gz"
