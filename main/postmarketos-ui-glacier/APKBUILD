@@ -1,0 +1,42 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=postmarketos-ui-glacier
+pkgver=0.1
+pkgrel=0
+pkgdesc="(Wayland) Open-source alternative to the SailfishOS UI"
+url="https://wiki.postmarketos.org/wiki/Plasma_Mobile"
+arch="noarch !armhf" # armhf blocked by qt5-qtdeclarative
+license="GPL-3.0-or-later"
+depends="elogind
+	glacier-home
+	ofono
+	ofono-openrc
+	pulseaudio
+	qt5-qtvirtualkeyboard
+	urfkill
+	urfkill-openrc
+	"
+# Required to launch
+depends="$depends
+	lightdm
+	lightdm-openrc
+	xorg-server
+	"
+install="$pkgname.post-install $pkgname.post-upgrade"
+source="60-lightdm-autologin.conf
+	glacier.sh
+	glacier.desktop
+	"
+options="!check"
+
+package() {
+	install -Dm644 "$srcdir"/60-lightdm-autologin.conf \
+		"$pkgdir"/usr/share/lightdm/lightdm.conf.d/60-autologin.conf
+	install -Dm755 "$srcdir"/glacier.sh \
+		"$pkgdir"/usr/bin/glacier
+	install -Dm755 "$srcdir"/glacier.desktop \
+		"$pkgdir"/usr/share/wayland-sessions/glacier.desktop
+}
+sha512sums="8059540c44bb68690e6e42fa0de18d1ed94a13d39513397f03afa7bfb582fb4f8e89239afde04de070b32ac8134c0e4b53d4b85fe2684d777c5e9c18922e58d5  60-lightdm-autologin.conf
+98a68b25e41b6c93c6ac044a0560ddf65e3d58b1584a2304f0f0dffb125e7f6c4b846278910119706ab0cea34a34e0ad04c6e67612a9e6de1eca1152ea7d960f  glacier.sh
+6a05f5ab14dd9bfa8366ff9e9acbe6443373fbdca22eb3ddbe6ccb57ff19835cfc312ab89fd6dfe91e1e8cc757d12b52c8a71172bac35775f132a5a6ec6be5a9  glacier.desktop"
