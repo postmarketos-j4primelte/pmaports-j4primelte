@@ -9,11 +9,10 @@ deviceinfo_year="2014"
 deviceinfo_keyboard="false"
 deviceinfo_dtb="qcom-msm8974-sony-xperia-castor"
 deviceinfo_append_dtb="true"
-deviceinfo_modules_initfs="rmi_core rmi_i2c rmi_spi"
+deviceinfo_modules_initfs="pm8941_pwrkey qnoc_msm8974 rmi_i2c"
 deviceinfo_external_storage="true"
 deviceinfo_flash_method="fastboot"
 deviceinfo_arch="armv7"
-deviceinfo_dev_touchscreen="/dev/input/event2"
 
 # Fastboot related
 deviceinfo_generate_bootimg="true"
