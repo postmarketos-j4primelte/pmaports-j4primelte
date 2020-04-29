@@ -3,19 +3,16 @@
 pkgname=device-pine64-pinephone
 pkgdesc="PINE64 PinePhone"
 pkgver=0.2
-pkgrel=8
+pkgrel=9
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
 options="!check !archcheck"
-subpackages="
-	$pkgname-nonfree-firmware:nonfree_firmware
-"
+subpackages="$pkgname-nonfree-firmware:nonfree_firmware"
 depends="postmarketos-base u-boot-pinephone uboot-tools mesa-git-dri-gallium linux-postmarketos-allwinner gpsd atinout bluez"
 makedepends="devicepkg-dev"
 install="$pkgname.post-install"
-source="
-	deviceinfo
+source="deviceinfo
 	uboot-script.cmd
 	sysrq.conf
 	weston.ini
@@ -29,7 +26,7 @@ source="
 	eg25.initd
 	setup-modem-audio.sh
 	setup-modem-audio.initd
-"
+	"
 
 build() {
 	devicepkg_build $startdir $pkgname
