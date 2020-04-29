@@ -3,29 +3,27 @@
 pkgname=device-pine64-pinetab
 pkgdesc="PINE64 PineTab"
 pkgver=0.1
-pkgrel=17
+pkgrel=18
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
 options="!check !archcheck"
 depends="postmarketos-base linux-postmarketos-allwinner u-boot-pinephone uboot-tools mesa-git-dri-gallium bluez"
 makedepends="devicepkg-dev"
-subpackages="
-	$pkgname-sway
+subpackages="$pkgname-sway
 	$pkgname-weston
 	$pkgname-phosh
 	$pkgname-nonfree-firmware:nonfree_firmware
-"
+	"
 install="$pkgname.post-install"
-source="
-	deviceinfo
+source="deviceinfo
 	uboot-script.cmd
 	sysrq.conf
 	sway.conf
 	99-pinetab-keyboard.hwdb
 	weston.ini
 	rootston.ini
-"
+	"
 
 build() {
 	devicepkg_build $startdir $pkgname
