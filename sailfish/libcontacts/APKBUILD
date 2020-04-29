@@ -1,0 +1,30 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=libcontacts
+pkgver=0.2.8
+pkgrel=0
+pkgdesc="A contact cache and various helper functions"
+url="https://git.sailfishos.org/mer-core/libcontacts"
+arch="all"
+license="BSD-3-Clause"
+makedepends="qt5-qtbase-dev qt5-qttools-dev qt5-qtpim-dev qtchooser qtcontacts-sqlite-dev mlite-dev libmlocale-dev mce-dev libphonenumber-dev"
+source="https://git.sailfishos.org/mer-core/libcontacts/-/archive/$pkgver/libcontacts-$pkgver.tar.gz
+	update-api-for-qtpim-5.9.patch
+	"
+subpackages="$pkgname-dev"
+options="!check" # No tests
+
+build() {
+	qmake-qt5 PREFIX=/usr
+	make
+}
+
+package() {
+	INSTALL_ROOT="$pkgdir" make install
+
+	# Remove installed tests
+	rm -r "$pkgdir"/opt
+}
+
+sha512sums="08dcc2d940e60ebc91ed3a6c3a5014c1a3198e69ce32f1ba1c85a3c5385147b4536a3bf0581b23bd4ca182173ca6c76eda0a4ae7f78c83f8f7bdb75be39e1f00  libcontacts-0.2.8.tar.gz
+0510e8e00ea8a775d535a370635ee277a3f644aac3f03b9d35e3dd33c4f725c03cc958cae6a212055876644c38ba67ef2f05c8e67767582c759931db7afbaf85  update-api-for-qtpim-5.9.patch"
