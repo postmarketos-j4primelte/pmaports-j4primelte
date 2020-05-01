@@ -1,0 +1,25 @@
+# Contributor: Camden B <camden.o.b@gmail.com>
+# Maintainer: Camden B <camden.o.b@gmail.com>
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname="device-samsung-j4primelte"
+pkgdesc="samsung Samsung Galaxy J4+"
+pkgver=0.1
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="armv7"
+options="!check !archcheck"
+depends="postmarketos-base linux-samsung-j4primelte mkbootimg mesa-dri-swrast"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+
+sha512sums="69a98e1b09ed2f5e5c705ec3e0e2a893ffd4b2eada01787de9f1f5946e394023813d929da382fc6df0b3d6455929297367ff511287cf7b90dfc6bf9b5587f008  deviceinfo"
