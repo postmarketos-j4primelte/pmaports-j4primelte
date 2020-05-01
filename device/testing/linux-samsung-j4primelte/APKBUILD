@@ -1,7 +1,7 @@
 # Contributor: Camden B <camden.o.b@gmail.com>
 # Maintainer: Camden B <camden.o.b@gmail.com>
 # Reference: <https://postmarketos.org/vendorkernel>
-# Kernel config based on: arch/arm/configs/(CHANGEME!)
+# Kernel config based on: /arch/arm/configs/j4primelte_defconfig 
 
 pkgname="linux-samsung-j4primelte"
 pkgver=3
