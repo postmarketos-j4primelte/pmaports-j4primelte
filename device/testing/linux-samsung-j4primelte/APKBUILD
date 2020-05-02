@@ -13,7 +13,7 @@ _flavor="samsung-j4primelte"
 url="https://kernel.org"
 license="GPL-2.0-only"
 options="!strip !check !tracedeps"
-makedepends="bash bc bison devicepkg-dev flex openssl-dev perl"
+makedepends="bash bc bison devicepkg-dev flex msm-fb-refresher openssl-dev perl"
 
 # Source
 _repository="android_kernel_samsung_msm8917"
@@ -22,7 +22,6 @@ _config="config-$_flavor.$arch"
 source="
 	$pkgname-$_commit.tar.gz::https://github.com/MacTavishAO/$_repository/archive/$_commit.tar.gz
 	$_config
-	8-9-drm-msm-mdp5-add-config-for-msm8917.patch
 "
 builddir="$srcdir/$_repository-$_commit"
 _outdir="out"
@@ -43,5 +42,4 @@ package() {
 }
 
 sha512sums="a8a8ae1b3eafbae2f1496236de536dece5d0989f766c2e770350150e2c2e04affe23a48e8127d12fdef741f624a2ca8943ed40b1ff3acc815940c5fe6cbeab4f  linux-samsung-j4primelte-16bd35e43407ed953e571c35e0c1599a680732ac.tar.gz
-90d31d51f33a1e1afeec4eac8d5d4cedb258c00643d350638bb0b4ecfff31a32273cd65a8c5ce418277d6d95f35b84bfbbabf7ef0ef171c398ac4a6cf7bcf319  config-samsung-j4primelte.armv7
-273fed4bd49affb1697f77cfd71980d2cfc73bb675aed6f64790be58e3e463440ac6d03c9cff6b70a378f40a443cdcbde189d3c2f7af02f20698b39ab5afcc15  8-9-drm-msm-mdp5-add-config-for-msm8917.patch"
+9a6eebb685defea1a6b4a3bea025a41b2bc18aa90864dfafb9bde3580bfe18b4cb7c9e9c5e1f7a8f49002a16f2765f61e28954ee716c0d90054a47af700d105a  config-samsung-j4primelte.armv7"
