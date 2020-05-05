@@ -22,6 +22,7 @@ _config="config-$_flavor.$arch"
 source="
 	$pkgname-$_commit.tar.gz::https://github.com/MacTavishAO/$_repository/archive/$_commit.tar.gz
 	$_config
+	05_fix_mdp3_ctrl_off.patch
 "
 builddir="$srcdir/$_repository-$_commit"
 _outdir="out"
@@ -42,5 +43,5 @@ package() {
 }
 
 sha512sums="a8a8ae1b3eafbae2f1496236de536dece5d0989f766c2e770350150e2c2e04affe23a48e8127d12fdef741f624a2ca8943ed40b1ff3acc815940c5fe6cbeab4f  linux-samsung-j4primelte-16bd35e43407ed953e571c35e0c1599a680732ac.tar.gz
-aa4453a359b13f8ade3eef3f3bd34da1b9e2fd92a9b7d031d019bff07f30e604f81017c75a716949f6361506f1035e4f44d11ae6c0a02d942210273985394a2a  config-samsung-j4primelte.armv7
+740a9e7508af054a0beac6929d1d6981205be585075d1659e32accad344c237c031cce713ed3ff3edae380544730f60b15cb6062029cecdfe6d6f2f5799606ac  config-samsung-j4primelte.armv7
 fbc61e379403990167853f4c4fbdfa22d7e9661a7eedecf2a75eec2a8008991a82d0a61be844ab4b1c88383f3fa79b43eff10b1039e44ad5a758a173cbf6386b  05_fix_mdp3_ctrl_off.patch"
