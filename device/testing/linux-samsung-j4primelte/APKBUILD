@@ -4,11 +4,11 @@
 # Kernel config based on: /arch/arm/configs/j4primelte_defconfig
 
 pkgname="linux-samsung-j4primelte"
-pkgver=5
+pkgver=3.18.120
 pkgrel=0
 pkgdesc="Samsung Galaxy J4+ kernel fork"
-arch="aarch64"
-_carch="arm64"
+arch="armv7"
+_carch="arm"
 _flavor="samsung-j4primelte"
 url="https://kernel.org"
 license="GPL-2.0-only"
@@ -16,11 +16,11 @@ options="!strip !check !tracedeps"
 makedepends="bash bc bison devicepkg-dev flex msm-fb-refresher openssl-dev perl"
 
 # Source
-_repository="linux"
-_commit="7f7f71412a472df9a8bbe77f308aa541485b4344"
+_repository="android_kernel_samsung_msm8917"
+_commit="16bd35e43407ed953e571c35e0c1599a680732ac"
 _config="config-$_flavor.$arch"
 source="
-	$pkgname-$_commit.tar.gz::https://github.com/EnderNightLord-ChromeBook/$_repository/archive/$_commit.tar.gz
+	$pkgname-$_commit.tar.gz::https://github.com/MacTavishAO/$_repository/archive/$_commit.tar.gz
 	$_config
 "
 builddir="$srcdir/$_repository-$_commit"
@@ -41,5 +41,5 @@ package() {
 	downstreamkernel_package "$builddir" "$pkgdir" "$_carch" "$_flavor" "$_outdir"
 }
 
-sha512sums="0d4ee07ff86254779f9e9cf9712b804c5963961e1ab7cccea901e0621818adcbc8cd02e79a23772eb72b60aaddc20a54dfd0fe3679535cf3de2dd138afa73057  linux-samsung-j4primelte-7f7f71412a472df9a8bbe77f308aa541485b4344.tar.gz
-d11478692596c63fbb67fafe65f2faa7b59615476d23a4535204dfa9ca6819b73efbc1f4c0ef26947331051dc19b8cedc5b244400f46fbef0a704422d0b96c10  config-samsung-j4primelte.aarch64"
+sha512sums="a8a8ae1b3eafbae2f1496236de536dece5d0989f766c2e770350150e2c2e04affe23a48e8127d12fdef741f624a2ca8943ed40b1ff3acc815940c5fe6cbeab4f  linux-samsung-j4primelte-16bd35e43407ed953e571c35e0c1599a680732ac.tar.gz
+9a6eebb685defea1a6b4a3bea025a41b2bc18aa90864dfafb9bde3580bfe18b4cb7c9e9c5e1f7a8f49002a16f2765f61e28954ee716c0d90054a47af700d105a  config-samsung-j4primelte.armv7"
