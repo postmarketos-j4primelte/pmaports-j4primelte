@@ -13,7 +13,14 @@ _flavor="samsung-j4primelte"
 url="https://kernel.org"
 license="GPL-2.0-only"
 options="!strip !check !tracedeps"
-makedepends="bash bc bison devicepkg-dev flex msm-fb-refresher openssl-dev perl"
+makedepends="bash bc bison devicepkg-dev flex msm-fb-refresher openssl-dev perl gcc4"
+
+# Compiler: GCC 4 (doesn't boot when compiled with newer versions)
+if [ "${CC:0:5}" != "gcc4-" ]; then
+	CC="gcc4-$CC"
+	HOSTCC="gcc4-gcc"
+	CROSS_COMPILE="gcc4-$CROSS_COMPILE"
+fi
 
 # Source
 _repository="android_kernel_samsung_msm8917"
