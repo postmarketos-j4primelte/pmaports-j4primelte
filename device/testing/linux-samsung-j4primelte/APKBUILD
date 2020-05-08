@@ -13,7 +13,7 @@ _flavor="samsung-j4primelte"
 url="https://kernel.org"
 license="GPL-2.0-only"
 options="!strip !check !tracedeps"
-makedepends="bash bc bison devicepkg-dev flex msm-fb-refresher openssl-dev perl gcc4"
+makedepends="bash bc bison devicepkg-dev flex openssl-dev perl gcc4"
 
 # Compiler: GCC 4 (doesn't boot when compiled with newer versions)
 if [ "${CC:0:5}" != "gcc4-" ]; then
