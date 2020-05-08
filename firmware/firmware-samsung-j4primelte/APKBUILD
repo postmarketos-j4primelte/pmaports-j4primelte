@@ -30,7 +30,7 @@ package() {
 	# /lib/firmware/postmarketos/qcom/venus-1.8
 	for _i in $_files_venus; do
 		install -D -m644 "$_i" \
-			"$pkgdir"/lib/firmware/postmarketos/qcom/venus-1.8"$_i"
+			"$pkgdir"/lib/firmware/postmarketos/qcom/venus-1.8/"$_i"
 	done
 
 	# /lib/firmware/postmarketos/wlan/prima
