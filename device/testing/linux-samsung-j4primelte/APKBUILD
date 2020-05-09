@@ -29,6 +29,7 @@ _config="config-$_flavor.$arch"
 source="
 	$pkgname-$_commit.tar.gz::https://github.com/MacTavishAO/$_repository/archive/$_commit.tar.gz
 	$_config
+	revert-arch_initcall-i2c-msm-v2.patch
 "
 builddir="$srcdir/$_repository-$_commit"
 _outdir="out"
@@ -50,3 +51,4 @@ package() {
 
 sha512sums="a8a8ae1b3eafbae2f1496236de536dece5d0989f766c2e770350150e2c2e04affe23a48e8127d12fdef741f624a2ca8943ed40b1ff3acc815940c5fe6cbeab4f  linux-samsung-j4primelte-16bd35e43407ed953e571c35e0c1599a680732ac.tar.gz
 740a9e7508af054a0beac6929d1d6981205be585075d1659e32accad344c237c031cce713ed3ff3edae380544730f60b15cb6062029cecdfe6d6f2f5799606ac  config-samsung-j4primelte.armv7
+2541aac5a0425ce6e2d37b51ed47e5042174f9aa7520072a7519c467927f2b6c431a3b7696d4628ebc5cabc0a2c8aab75b7a3f241d0441580c51d29a017c8527  revert-arch_initcall-i2c-msm-v2.patch"

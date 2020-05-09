@@ -1,0 +1,12 @@
+diff --git a/drivers/i2c/busses/i2c-msm-v2.c b/drivers/i2c/busses/i2c-msm-v2.c
+index 787e1fd..33192eb 100644
+--- a/drivers/i2c/busses/i2c-msm-v2.c
++++ b/drivers/i2c/busses/i2c-msm-v2.c
+@@ -3024,7 +3024,6 @@ static int i2c_msm_init(void)
+ {
+ 	return platform_driver_register(&i2c_msm_driver);
+ }
+-arch_initcall(i2c_msm_init);
+ 
+ static void i2c_msm_exit(void)
+ {
