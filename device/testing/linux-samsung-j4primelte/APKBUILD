@@ -33,6 +33,11 @@ source="
 builddir="$srcdir/$_repository-$_commit"
 _outdir="out"
 
+prepare() {
+	default_prepare
+	cp "$srcdir/config-$_flavor.$arch" .config
+}
+
 build() {
 	unset LDFLAGS
 	make O="$_outdir" ARCH="$_carch" CC="${CC:-gcc}" \
