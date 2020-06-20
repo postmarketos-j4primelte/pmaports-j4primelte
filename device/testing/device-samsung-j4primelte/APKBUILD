@@ -7,9 +7,9 @@ pkgver=0.1
 pkgrel=0
 url="https://postmarketos.org"
 license="MIT"
-arch="armv7"
+arch="aarch64"
 options="!check !archcheck"
-depends="postmarketos-base firmware-samsung-j4primelte linux-samsung-j4primelte mkbootimg mesa-dri-swrast mdss-fb-init-hack msm-fb-refresher"
+depends="postmarketos-base firmware-samsung-j4primelte linux-samsung-j4primelte mkbootimg mesa-dri-swrast"
 makedepends="devicepkg-dev"
 source="deviceinfo initfs-hook.sh"
 
@@ -22,5 +22,5 @@ package() {
 }
 
 
-sha512sums="69a98e1b09ed2f5e5c705ec3e0e2a893ffd4b2eada01787de9f1f5946e394023813d929da382fc6df0b3d6455929297367ff511287cf7b90dfc6bf9b5587f008  deviceinfo
+sha512sums="e6369b2b96dacc28aebe2128aaf039fae6c4cabf6dae54a17b2be1b98e568ccea0b04e9b3a97322c022405c669814ca58f5d36fd2f41571a816bc106d983dce4  deviceinfo
 e4cd76fce7d7cc8002ae15048e58fd06fc948e1a281f89d8b7f60aa9b56d0a440d732f698dc0c1d1d3ce95ff75f1a4b86f44553c9f4fb99990a119b474065284  initfs-hook.sh"

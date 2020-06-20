@@ -1,14 +1,14 @@
 # Contributor: Ataberk Özen <ataberkozen123@gmail.com>
 # Maintainer: Camden B <camden.o.b@gmail.com>
 # Reference: <https://postmarketos.org/vendorkernel>
-# Kernel config based on: /arch/arm/configs/j4primelte_defconfig
+# Kernel config based on: /arch/arm64/configs/defconfig
 
 pkgname="linux-samsung-j4primelte"
-pkgver=3.18.120
+pkgver=5.8.0
 pkgrel=0
-pkgdesc="Samsung Galaxy J4+ kernel fork"
-arch="armv7"
-_carch="arm"
+pkgdesc="Samsung Galaxy J4+ mainline kernel fork"
+arch="aarch64"
+_carch="arm64"
 _flavor="samsung-j4primelte"
 url="https://kernel.org"
 license="GPL-2.0-only"
@@ -23,22 +23,15 @@ if [ "${CC:0:5}" != "gcc4-" ]; then
 fi
 
 # Source
-_repository="android_kernel_samsung_msm8917"
-_commit="16bd35e43407ed953e571c35e0c1599a680732ac"
+_repository="linux"
+_commit="a93072033ec3dbba6566870e4d31462ffe7d2f9d"
 _config="config-$_flavor.$arch"
 source="
-	$pkgname-$_commit.tar.gz::https://github.com/MacTavishAO/$_repository/archive/$_commit.tar.gz
+	$pkgname-$_commit.tar.gz::https://github.com/postmarketos-j4primelte/$_repository/archive/$_commit.tar.gz
 	$_config
-	revert-arch_initcall-i2c-msm-v2.patch
-	fix-xorg-mdss-update-fb-info.patch
 "
 builddir="$srcdir/$_repository-$_commit"
 _outdir="out"
-
-prepare() {
-	default_prepare
-	. downstreamkernel_prepare
-}
 
 build() {
 	unset LDFLAGS
@@ -47,10 +40,8 @@ build() {
 }
 
 package() {
-	downstreamkernel_package "$builddir" "$pkgdir" "$_carch" "$_flavor" "$_outdir"
+	"$builddir" "$pkgdir" "$_carch" "$_flavor" "$_outdir"
 }
 
-sha512sums="a8a8ae1b3eafbae2f1496236de536dece5d0989f766c2e770350150e2c2e04affe23a48e8127d12fdef741f624a2ca8943ed40b1ff3acc815940c5fe6cbeab4f  linux-samsung-j4primelte-16bd35e43407ed953e571c35e0c1599a680732ac.tar.gz
-23451de4b6bddc7d3cba3a4bf414ad3d750f7650d5676338baa1d4cbdd0912a679d4697078351abe09b4815fc98e2401a16ab286f22b02659d3881ba8ec5f35d  config-samsung-j4primelte.armv7
-2541aac5a0425ce6e2d37b51ed47e5042174f9aa7520072a7519c467927f2b6c431a3b7696d4628ebc5cabc0a2c8aab75b7a3f241d0441580c51d29a017c8527  revert-arch_initcall-i2c-msm-v2.patch
-a277af28a718f5caf94257005393aa92d62c96110a8ec6368ff62f2e0d871b69c56c4ce00174db637204d53fa63ad3a79b8d6141713dca0878e1f06fe0379caa  fix-xorg-mdss-update-fb-info.patch"
+sha512sums="08439e0506dbb4e2a1dd4ffd0f5353285ffe08fd31400c1a4c37817bb702de49b804695a8de221412cf9546ceea6738f5c0a2b23ec103c59fdc506d80a349ada  linux-samsung-j4primelte-a93072033ec3dbba6566870e4d31462ffe7d2f9d.tar.gz
+255aac431b1f4c2f7239995e9fbb7a0711e9690ff7fd5921cf16307c745f79c21cf1467ef1e11e2bef5bed56eb8b54b59f148194f39a7fa49a1daf2164c9e79f  config-samsung-j4primelte.aarch64"

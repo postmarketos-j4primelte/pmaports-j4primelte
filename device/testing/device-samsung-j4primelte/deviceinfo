@@ -8,7 +8,7 @@ deviceinfo_codename="samsung-j4primelte"
 deviceinfo_year="2018"
 deviceinfo_dtb=""
 deviceinfo_modules_initfs=""
-deviceinfo_arch="armv7"
+deviceinfo_arch="aarch64"
 deviceinfo_chassis="handset"
 
 # Device related
