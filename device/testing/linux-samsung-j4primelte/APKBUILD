@@ -35,7 +35,8 @@ _outdir="out"
 
 prepare() {
 	default_prepare
-	cp "$srcdir/config-$_flavor.$arch" .config
+	mkdir "$builddir/$_outdir"
+	cp "$srcdir/config-$_flavor.$arch" "$_outdir"/.config
 }
 
 build() {
