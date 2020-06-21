@@ -12,15 +12,8 @@ _carch="arm64"
 _flavor="samsung-j4primelte"
 url="https://kernel.org"
 license="GPL-2.0-only"
-options="!strip !check !tracedeps"
-makedepends="bash bc bison devicepkg-dev flex openssl-dev perl gcc4"
-
-# Compiler: GCC 4 (doesn't boot when compiled with newer versions)
-if [ "${CC:0:5}" != "gcc4-" ]; then
-	CC="gcc4-$CC"
-	HOSTCC="gcc4-gcc"
-	CROSS_COMPILE="gcc4-$CROSS_COMPILE"
-fi
+options="!strip !check !tracedeps pmb:cross-native"
+makedepends="bison findutils flex installkernel openssl-dev perl"
 
 # Source
 _repository="linux"
@@ -31,23 +24,30 @@ source="
 	$_config
 "
 builddir="$srcdir/$_repository-$_commit"
-_outdir="out"
 
 prepare() {
 	default_prepare
-	mkdir "$builddir/$_outdir"
-	cp "$srcdir/config-$_flavor.$arch" "$_outdir"/.config
+	cp "$srcdir/config-$_flavor.$arch" .config
 }
 
 build() {
 	unset LDFLAGS
-	make O="$_outdir" ARCH="$_carch" CC="${CC:-gcc}" \
+	make ARCH="$_carch" CC="${CC:-gcc}" \
 		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-postmarketOS"
 }
 
 package() {
-	"$builddir" "$pkgdir" "$_carch" "$_flavor" "$_outdir"
-}
+	mkdir -p "$pkgdir"/boot
+	install -Dm644 "$builddir/arch/$_carch/boot/Image.gz" \
+		"$pkgdir/boot/vmlinuz-$_flavor"
+
+	install -D "$builddir/include/config/kernel.release" \
+		"$pkgdir/usr/share/kernel/$_flavor/kernel.release"
+
+	make modules_install dtbs_install \
+		ARCH="$_carch" \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_DTBS_PATH="$pkgdir"/usr/share/dtb
 
 sha512sums="08439e0506dbb4e2a1dd4ffd0f5353285ffe08fd31400c1a4c37817bb702de49b804695a8de221412cf9546ceea6738f5c0a2b23ec103c59fdc506d80a349ada  linux-samsung-j4primelte-a93072033ec3dbba6566870e4d31462ffe7d2f9d.tar.gz
 255aac431b1f4c2f7239995e9fbb7a0711e9690ff7fd5921cf16307c745f79c21cf1467ef1e11e2bef5bed56eb8b54b59f148194f39a7fa49a1daf2164c9e79f  config-samsung-j4primelte.aarch64"
